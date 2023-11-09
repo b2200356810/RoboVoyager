@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="global.css" />
+        <title>Rosbridge Test</title>
+    </head>
+
+    <body>
+        <div class="title">
+            <h1>Rosbridge demo</h1>
+            <p>
+                Connection:
+                <span id="status" style="font-weight: bold">N/A</span>
+            </p>
+        </div>
+
+        <div class="card-container">
+            <div class="card">
+                <p>Messages received from: <code>/terminal_topic</code></p>
+                <ul id="terminal-messages" style="font-weight: bold"></ul>
+            </div>
+
+            <div class="card">
+                <form id="message-form">
+                    <label for="topic">Topic:</label>
+                    <input type="text" id="topic" name="topic" required />
+                    <label for="message">Message:</label>
+                    <input type="text" id="message" name="message" required />
+                    <input type="submit" value="Publish Message" />
+                </form>
+            </div>
+
+            <div class="card">
+                <p>
+                    Messages received from:
+                    <code id="reply-topic"># topic</code>
+                </p>
+                <ul id="reply-messages" style="font-weight: bold"></ul>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="roslib.min.js"></script>
+        <!-- <script type="text/javascript" src="https://s3.eu-west-1.amazonaws.com/rosject.io/js/roslib.min.js"></script> -->
+
+        <script type="text/javascript" src="rosbridge.js"></script>
+    </body>
+</html>
