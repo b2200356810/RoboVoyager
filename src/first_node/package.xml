@@ -6,7 +6,7 @@
   <maintainer email="emir@todo.todo">emir</maintainer>
   <license>TODO</license>
 
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="jane.doe@example.com">Jane Doe</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>

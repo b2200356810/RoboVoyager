@@ -11,6 +11,7 @@ catkin_make
 roscore
 
 # server
+sudo apt install ros-noetic-rosbridge-server
 roslaunch rosbridge_server rosbridge_websocket.launch
 
 # node listener
