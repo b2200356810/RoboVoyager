@@ -8,7 +8,6 @@
             * {
                 margin: 0;
                 padding: 0;
-                -webkit-box-sizing: border-box;
                 box-sizing: border-box;
             }
 
@@ -21,22 +20,19 @@
                 padding: 2rem;
                 color: aliceblue;
                 background-color: steelblue;
-                font-size: 1.8rem;
+                font-size: 1.6rem;
             }
 
             .title {
-                padding: 1rem;
                 align-self: center;
                 margin: auto;
                 margin-bottom: 2rem;
                 width: fit-content;
-                /* box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
-                /* background-color: gray; */
             }
 
             .card-container {
                 display: grid;
-                gap: 2rem;
+                gap: 1rem;
                 grid-template-columns: 1fr 1fr 1fr;
             }
 
@@ -56,21 +52,6 @@
                 list-style: none;
                 font-weight: lighter;
             }
-
-            #message-form {
-                display: flex;
-                flex-direction: column;
-                gap: 0.2rem;
-            }
-
-            #message-form input {
-                color: rgb(50, 50, 50);
-                padding: 0.2rem;
-                border-radius: 2px;
-                outline: none;
-                border: none;
-                box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
-            }
         </style>
     </head>
 
@@ -79,7 +60,7 @@
             <h1>Rosbridge demo</h1>
             <p>
                 Connection:
-                <span id="status" style="font-weight: bold">N/A</span>
+                <span id="status">N/A</span>
             </p>
         </div>
 
@@ -90,7 +71,7 @@
             </div>
 
             <div class="card">
-                <div>ROS IP:</div>
+                <div>ROS IP</div>
                 <input type="text" id="ros-ip" />
                 <button onclick="connectToCustomROS()">Connect</button>
             </div>
@@ -98,6 +79,10 @@
             <div class="card">
                 <p>Messages received from: <code>/first_node_topic</code></p>
                 <ul id="first-node-messages" style="font-weight: bold"></ul>
+            </div>
+            <div class="card">
+                <p>Images received from: <code>/image_topic</code></p>
+                <div id="image-container"></div>
             </div>
         </div>
 
@@ -107,15 +92,12 @@
         ></script>
 
         <script type="text/javascript">
-            // Connecting to rosbridge though a custom IP
             let ros;
 
             function connectToCustomROS() {
                 const customRosIP = document.getElementById("ros-ip").value;
 
-                ros = new ROSLIB.Ros({
-                    url: `ws:${customRosIP}:9090`,
-                });
+                ros = new ROSLIB.Ros({ url: `ws:${customRosIP}:9090` });
 
                 ros.on("connection", () => {
                     document.getElementById("status").innerText = "successful";
@@ -133,39 +115,6 @@
                     document.getElementById("status").innerText = "closed";
                 });
             }
-
-            // CHANGE IP LATER!!!
-            // const ros = new ROSLIB.Ros({ url: "ws:192.168.1.27:9090" });
-            // function connectToROS() {
-            //     ros.on("connection", () => {
-            //         document.getElementById("status").innerText = "successful";
-            //         subscribeToFirstNodeTopic();
-            //     });
-            //     ros.on("error", (error) => {
-            //         document.getElementById(
-            //             "status"
-            //         ).innerText = `errored out (${error})`;
-            //     });
-            //     ros.on("close", () => {
-            //         document.getElementById("status").innerText = "closed";
-            //     });
-            // }
-
-            // const messageForm = document.getElementById("message-form");
-            // messageForm.addEventListener("submit", function (event) {
-            //     event.preventDefault();
-
-            //     const topic = document.getElementById("topic").value;
-            //     const messageData = document.getElementById("message").value;
-            //     const message = new ROSLIB.Message({ data: messageData });
-
-            //     const publisher = new ROSLIB.Topic({
-            //         ros: ros,
-            //         name: topic,
-            //         messageType: "std_msgs/String",
-            //     });
-            //     publisher.publish(message);
-            // });
 
             function subscribeToTerminalTopic() {
                 const terminalTopicListener = new ROSLIB.Topic({
@@ -193,13 +142,13 @@
             }
 
             function subscribeToFirstNodeTopic() {
-                const replyTopicListener = new ROSLIB.Topic({
+                const firstNodeTopicListener = new ROSLIB.Topic({
                     ros: ros,
                     name: "/first_node_topic",
                     messageType: "std_msgs/String",
                 });
 
-                replyTopicListener.subscribe(function (message) {
+                firstNodeTopicListener.subscribe(function (message) {
                     const ul = document.getElementById("first-node-messages");
                     const newMessage = document.createElement("li");
 
@@ -216,10 +165,6 @@
                     ul.appendChild(newMessage);
                 });
             }
-
-            // connectToROS();
-            // subscribeToTerminalTopic();
-            // subscribeToFirstNodeTopic();
         </script>
     </body>
 </html>
