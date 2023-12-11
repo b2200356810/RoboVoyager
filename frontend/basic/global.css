@@ -14,6 +14,8 @@ body {
     color: aliceblue;
     background-color: steelblue;
     font-size: 1.6rem;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+        sans-serif;
 }
 
 .title {
@@ -43,7 +45,34 @@ body {
     overflow-y: auto;
 }
 
+.card code {
+    word-wrap: break-word;
+}
+
 .card li {
     list-style: none;
     font-weight: lighter;
+}
+
+#multimedia-container {
+    position: relative;
+    margin: 20px 0;
+    width: 100%;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 0 4px;
+}
+
+#multimedia-image {
+    width: 100%;
+}
+
+#multimedia-size {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: fit-content;
+    height: fit-content;
+    margin: 10px;
+    padding: 5px;
+    border: 1px solid black;
+    background-color: gray;
 }
