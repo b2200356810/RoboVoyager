@@ -1,44 +1,57 @@
 #!/usr/bin/env python3
 
+import cv2
 import rospy
 from sensor_msgs.msg import Image
-import cv2
 
-cap = cv2.VideoCapture(0)
+# print(cv2.getBuildInformation())
 
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+encoding_format = 'jpg'
 
-print('\nCamera is open:', cap.isOpened())
-print('Resolution: 720x1280')
+if encoding_format == 'jpg':
+    jpg_settings = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+elif encoding_format == 'png':
+    png_settings = [int(cv2.IMWRITE_PNG_COMPRESSION), 2]
+    
+def decode_fourcc(cc):
+    return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
 
 def talker():
     rospy.init_node('multimedia_node', anonymous=False)
-    pub = rospy.Publisher('/multimedia_topic', Image, queue_size=2)
+    pub = rospy.Publisher('/multimedia_topic', Image, queue_size = 1)
     rate = rospy.Rate(30)
 
-    encoding_format = 'jpg'
+    cap = cv2.VideoCapture(0)
+    print('\nCamera is open:', cap.isOpened())
+    codec = cap.get(cv2.CAP_PROP_FOURCC)
+    print(f"Codec: {decode_fourcc(codec)}")
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 
-    if encoding_format == 'jpg':
-        jpg_settings = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
-    elif encoding_format == 'png':
-        png_settings = [int(cv2.IMWRITE_PNG_COMPRESSION), 5]
-    elif encoding_format == 'h264':
-        fourcc = cv2.VideoWriter_fourcc(*'H264')
-        video_writer = cv2.VideoWriter('output_video.mp4', fourcc, 30.0, (640, 480))
+    print(f"Encoding selected: {encoding_format}")
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(f"Resolution: {width}x{height}")
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    print(f"Frames Per Second (FPS): {fps}")
+
+    ret, frame = cap.read()
+    size_kb = len(cv2.imencode('.jpg', frame)[1]) / 1000
+    print(f"Frame Size: {size_kb:.2f} KB")
 
     while not rospy.is_shutdown():
         ret, frame = cap.read()
         if not ret:
             break
 
+        # cv2.imshow('Video', frame)
+
         if encoding_format == 'jpg':
             _, img_encoded = cv2.imencode('.jpg', frame, jpg_settings)
         elif encoding_format == 'png':
             _, img_encoded = cv2.imencode('.png', frame, png_settings)
-        elif encoding_format == 'h264':
-            video_writer.write(frame)
 
         img_data = img_encoded.tobytes()
         msg = Image()
@@ -57,9 +70,8 @@ def talker():
 
         rate.sleep()
 
-    if encoding_format == 'h264':
-        video_writer.release()
     cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     try:
