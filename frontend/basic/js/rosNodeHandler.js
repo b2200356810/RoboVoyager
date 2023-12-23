@@ -1,9 +1,7 @@
 let ros;
 
 function connectToIP() {
-    const rosIP = document.getElementById("ros-ip").value;
-
-    ros = new ROSLIB.Ros({ url: `ws:${rosIP}:9090` });
+    ros = new ROSLIB.Ros({ url: `ws:${location.hostname}:9090` });
 
     ros.on("connection", () => {
         document.getElementById("status").innerText = "successful";

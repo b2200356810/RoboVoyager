@@ -63,6 +63,10 @@ v4l2-ctl -d /dev/video0 --list-formats-ext
 ##Install with
 sudo apt install v4l-utils
 
+##Open CV info for image encoders, video codecs, etc
+
+print(cv2.getBuildInformation())
+
 ## setup environment
 
 [Ros launch command not found](https://answers.ros.org/question/264704/ros-launch-command-not-found/)

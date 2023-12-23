@@ -4,43 +4,57 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" type="text/css" href="global.css" />
-        <title>Rosbridge Test</title>
+        <link rel="icon" type="image/x-icon" href="./images/robo.svg" />
+        <title>Robo Voyager</title>
     </head>
 
-    <body>
-        <div class="title">
-            <h1>Rosbridge demo</h1>
-            <p>
+    <body onload="connectToIP()">
+        <input type="checkbox" id="menu-toggle" />
+        <nav>
+            <label for="menu-toggle" class="hamburger">&#9776;</label>
+            <div id="connection-status">
                 Connection:
-                <span id="status">N/A</span>
-            </p>
-        </div>
+                <code id="status">N/A</code>
+            </div>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Feedback</a></li>
+            </ul>
+            <button
+                id="theme-button"
+                onclick="(() => { document.body.classList.toggle('dark-theme'); })()"
+            >
+                <div></div>
+            </button>
+        </nav>
 
-        <div class="card-container">
-            <div class="card">
-                <p>Messages received from: <code>/terminal_topic</code></p>
-                <ul id="terminal-messages" style="font-weight: bold"></ul>
+        <div class="container">
+            <div class="card-container">
+                <div class="card">
+                    <p>Messages received from: <code>/terminal_topic</code></p>
+                    <ul id="terminal-messages" style="font-weight: bold"></ul>
+                </div>
+
+                <div class="card">
+                    <p>
+                        Messages received from: <code>/first_node_topic</code>
+                    </p>
+                    <ul id="first-node-messages" style="font-weight: bold"></ul>
+                </div>
             </div>
 
-            <div class="card">
-                <div>ROS IP</div>
-                <input type="text" id="ros-ip" />
-                <button onclick="connectToIP()">Connect</button>
-            </div>
-
-            <div class="card">
-                <p>Messages received from: <code>/first_node_topic</code></p>
-                <ul id="first-node-messages" style="font-weight: bold"></ul>
+            <div id="multimedia-container">
+                <img id="multimedia-image" alt="" />
+                <div id="multimedia-size"></div>
             </div>
         </div>
 
-        <div id="multimedia-container">
-            <img id="multimedia-image" alt="" />
-            <div id="multimedia-size"></div>
-        </div>
+        <script src="./js/rosNodeHandler.js"></script>
+        <script src="./js/roslib.min.js"></script>
 
-        <script type="text/javascript" src="rosNodeHandler.js"></script>
-        <script type="text/javascript" src="roslib.min.js"></script>
         <!-- <script type="text/javascript" src="https://s3.eu-west-1.amazonaws.com/rosject.io/js/roslib.min.js"></script> -->
     </body>
 </html>
