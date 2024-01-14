@@ -9,7 +9,7 @@
 		const unsubscribe = rosStore.subscribe((value) => {
 			if (value !== null) {
 				ros = value;
-				console.log('Inside contact');
+				console.log('Inside controls');
 				subscribeToTerminalTopic();
 			}
 		});
