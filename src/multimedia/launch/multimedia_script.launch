@@ -1,3 +1,0 @@
-<launch>
-    <node name='multimedia' pkg='multimedia' type='multimedia_script.py' output="screen" respawn="true" />
-</launch>

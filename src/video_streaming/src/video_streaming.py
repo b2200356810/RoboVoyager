@@ -17,11 +17,11 @@ def decode_fourcc(cc):
     return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
 
 def talker():
-    rospy.init_node('multimedia_node', anonymous=False)
-    pub = rospy.Publisher('/multimedia_topic', Image, queue_size = 1)
+    rospy.init_node('video_streaming_node', anonymous=False)
+    pub = rospy.Publisher('/video_streaming_topic', Image, queue_size = 5)
     rate = rospy.Rate(30)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
     print('\nCamera is open:', cap.isOpened())
     codec = cap.get(cv2.CAP_PROP_FOURCC)
     print(f"Codec: {decode_fourcc(codec)}")

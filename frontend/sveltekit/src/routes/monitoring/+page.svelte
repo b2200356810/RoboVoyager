@@ -16,7 +16,7 @@
 				ros = value;
 				console.log('Inside monitoring');
 				subscribeToTerminalTopic();
-				subscribeToMultimediaTopic();
+				subscribeToVideoStreamingTopic();
 			}
 		});
 	});
@@ -47,15 +47,16 @@
 		});
 	}
 
-	function subscribeToMultimediaTopic() {
+	function subscribeToVideoStreamingTopic() {
 		videoTopicListener = new ROSLIB.Topic({
 			ros: ros,
-			name: '/multimedia_topic',
+			name: '/video_streaming_topic',
 			messageType: 'sensor_msgs/Image'
 		});
 
 		videoTopicListener.subscribe(function (message) {
 			videoTopicData = message.data;
+			// console.log(message);
 		});
 	}
 </script>
@@ -63,7 +64,8 @@
 <div class="monitor-container">
 	<MonitorWindow monitorName="/terminal_topic" monitorContent={terminalTopicData}></MonitorWindow>
 	<MonitorWindow monitorName="/hello_world_topic"></MonitorWindow>
-	<MonitorWindow monitorName="/multimedia_topic" monitorContent={videoTopicData}></MonitorWindow>
+	<MonitorWindow monitorName="/video_streaming_topic" monitorContent={videoTopicData}
+	></MonitorWindow>
 </div>
 
 <style>
