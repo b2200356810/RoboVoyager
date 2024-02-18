@@ -37,22 +37,22 @@
 <div class="home-container">
 	<section class="feature-section">
 		<h1 class="feature-title">Robo Voyager</h1>
-		<p class="feature-description">Your gateway to the world of robotics and automation.</p>
+		<blockquote class="feature-description">To infinity, and beyond! - Buzz Lightyear</blockquote>
 	</section>
 
 	<section class="feature-section">
 		<h2 class="feature-title">Network Connection</h2>
 		<p class="feature-description">
-			Ensure your device is connected to the same local network. Check the connection status in the
-			navbar.
+			Ensure your device is connected to the same local network. Check the <strong
+				>connection</strong
+			> status in the navbar.
 		</p>
 	</section>
 
 	<section class="feature-section">
 		<h2 class="feature-title">Monitoring Tab</h2>
 		<p class="feature-description">
-			View sensor messages and video stream. Subscribe/unsubscribe from topics and resize windows
-			for a customized monitoring experience.
+			View sensor messages and video stream. Subscribe/unsubscribe from topics.
 		</p>
 	</section>
 
@@ -68,61 +68,18 @@
 		<div class="feature-description">
 			<ul class="ai-list">
 				<li>Object Detection: OpenPCDet</li>
-				<li>Segmentation: mmsegmentation</li>
+				<li>Segmentation Framework: mmsegmentation</li>
 				<li>Anomaly Detection: PEBAL</li>
 			</ul>
 		</div>
 	</section>
-</div>
-
-<div class="home-container">
-	<h1>Robo Voyager</h1>
-	<section class="feature-section">
-		<p>Your gateway to the world of robotics and automation.</p>
-	</section>
-
-	<section class="feature-section">
-		<h2 class="feature-title">Network Connection</h2>
-		<p class="feature-description">
-			Ensure your device is connected to the same local network. Check the connection status in the
-			navbar.
-		</p>
-	</section>
-
-	<section class="feature-section">
-		<h2 class="feature-title">Monitoring Tab</h2>
-		<p class="feature-description">
-			View sensor messages and video stream. Subscribe/unsubscribe from topics and resize windows
-			for a customized monitoring experience.
-		</p>
-	</section>
-
-	<section class="feature-section">
-		<h2 class="feature-title">Controls Tab</h2>
-		<p class="feature-description">
-			Utilize virtual joysticks displayed over a video to manually control a robot's movement.
-		</p>
-	</section>
-
-	<section class="feature-section">
-		<h2 class="feature-title">AI Models</h2>
-		<div class="feature-description">
-			<ul>
-				<li>Object Detection: OpenPCDet</li>
-				<li>Segmentation: mmsegmentation</li>
-				<li>Anomaly Detection: PEBAL</li>
-			</ul>
-		</div>
-	</section>
-
-	<a href="#" class="cta-button">Get Started</a>
 </div>
 
 <style>
 	.home-container {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 30px;
 		padding: 20px;
 	}
 	.feature-section h1 {
@@ -130,5 +87,12 @@
 	}
 	.ai-list {
 		padding-left: 20px;
+	}
+
+	@media (min-width: 800px) {
+		.home-container {
+			margin: 20px auto;
+			width: 800px;
+		}
 	}
 </style>

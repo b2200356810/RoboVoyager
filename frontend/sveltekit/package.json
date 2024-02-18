@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
+		"lan": "vite dev --host 0.0.0.0",
 		"build": "vite build",
 		"preview": "vite preview",
 		"lint": "prettier --check . && eslint .",
@@ -24,6 +25,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"nipplejs": "^0.10.1",
 		"roslib": "^1.4.1"
 	}
 }

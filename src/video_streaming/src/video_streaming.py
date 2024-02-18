@@ -3,13 +3,18 @@
 import cv2
 import rospy
 from sensor_msgs.msg import Image
+# from sensor_msgs.msg import CompressedImage
+import sys
+from cv_bridge import CvBridge
+
+bridge = CvBridge()
 
 # print(cv2.getBuildInformation())
 
 encoding_format = 'jpg'
 
 if encoding_format == 'jpg':
-    jpg_settings = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+    jpg_settings = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
 elif encoding_format == 'png':
     png_settings = [int(cv2.IMWRITE_PNG_COMPRESSION), 2]
     
@@ -18,28 +23,29 @@ def decode_fourcc(cc):
 
 def talker():
     rospy.init_node('video_streaming_node', anonymous=False)
-    pub = rospy.Publisher('/video_streaming_topic', Image, queue_size = 5)
+    pub = rospy.Publisher('/video_streaming_topic', Image, queue_size = 10)
+    # pub = rospy.Publisher('/video_streaming_topic', CCompressedImageom, queue_size = 2)
     rate = rospy.Rate(30)
 
-    cap = cv2.VideoCapture(2)
-    print('\nCamera is open:', cap.isOpened())
+    cap = cv2.VideoCapture(0) # Change values for camera sources
+    ret, frame = cap.read()
+
     codec = cap.get(cv2.CAP_PROP_FOURCC)
-    print(f"Codec: {decode_fourcc(codec)}")
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-
-    print(f"Encoding selected: {encoding_format}")
-
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    print(f"Resolution: {width}x{height}")
-
     fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"Frames Per Second (FPS): {fps}")
-
-    ret, frame = cap.read()
     size_kb = len(cv2.imencode('.jpg', frame)[1]) / 1000
-    print(f"Frame Size: {size_kb:.2f} KB")
+
+    print('\nCamera is open:', cap.isOpened())
+    print(f"Codec: {decode_fourcc(codec)}")
+    print(f"Encoding selected: {encoding_format}")
+    print(f"Resolution: {width}x{height}")
+    print(f"Frames Per Second (FPS): {fps}")
+    # print(f"Frame Size: {size_kb:.2f} KB")
+
+    printed_message = False
 
     while not rospy.is_shutdown():
         ret, frame = cap.read()
@@ -55,6 +61,7 @@ def talker():
 
         img_data = img_encoded.tobytes()
         msg = Image()
+        # msg = CompressedImage()
         msg.header.stamp = rospy.Time.now()
         msg.height = frame.shape[0]
         msg.width = frame.shape[1]
@@ -62,6 +69,12 @@ def talker():
         msg.is_bigendian = 0
         msg.step = 3 * frame.shape[1]
         msg.data = img_data
+        # msg.data = bridge.cv2_to_compressed_imgmsg(frame, dst_format=encoding_format).data
+
+        message_combined = sys.getsizeof(msg.header.stamp) + sys.getsizeof(msg.height) + sys.getsizeof(msg.width) + sys.getsizeof(msg.encoding) + sys.getsizeof(msg.is_bigendian) + sys.getsizeof(msg.step) + sys.getsizeof(msg.data)
+        if not printed_message:
+            print(f"Message Size: {message_combined:.2f} KB")
+            printed_message = True
 
         pub.publish(msg)
 
@@ -69,7 +82,6 @@ def talker():
             break
 
         rate.sleep()
-
     cap.release()
     cv2.destroyAllWindows()
 

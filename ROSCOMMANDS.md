@@ -2,7 +2,7 @@
 
 List of commands for installing and using ROS **Noetic Ninjemys** (Ubuntu 20 dependency)
 
-## 1 Click Install
+## 1 Line Install
 
 ```bash
 wget -c https://raw.githubusercontent.com/qboticslabs/ros_install_noetic/master/ros_install_noetic.sh && chmod +x ./ros_install_noetic.sh && ./ros_install_noetic.sh
@@ -312,3 +312,8 @@ rosrun sound_play soundplay_node.py
 rosrun sound_play say.py 'Hello world'
 
 echo $ROS_PACKAGE_PATH will give paths where ROS packages are installed
+
+rostopic bw /video_streaming_topic
+ROS Tools:
+
+You can use tools like rostopic bw to get bandwidth information, which includes the rate and the average message size. While this won't give you the exact size of each message, it can provide an average.
