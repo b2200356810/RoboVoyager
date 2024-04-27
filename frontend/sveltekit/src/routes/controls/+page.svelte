@@ -9,6 +9,8 @@
 
 	let ros;
 	let terminalTopicListener;
+	let controlsTopicListener;
+
 
 	const loadNippleJs = async () => {
 		const { default: Nipple } = await import('nipplejs');
@@ -23,6 +25,7 @@
 
 		joystick.on('move', (evt, data) => {
 			updateDebugFields(data);
+			publishJoystickCommands(data);
 		});
 
 		joystick.on('end', () => {
@@ -75,6 +78,7 @@
 				ros = value;
 				console.log('Inside controls');
 				subscribeToTerminalTopic();
+				subscribeToControlsTopic();
 			}
 		});
 	});
@@ -99,6 +103,29 @@
 			console.log(message.data);
 		});
 	}
+
+	function subscribeToControlsTopic() {
+		controlsTopicListener = new ROSLIB.Topic({
+			ros,
+			name: '/controls_topic',
+			messageType: 'sensor_msgs/Joy'
+		});
+	}
+
+	function publishJoystickCommands(data) {
+		// console.log(typeof(data.position.y), data.position.y)
+    if (controlsTopicListener) {
+        let x = parseFloat(data.position.x);
+        let y = parseFloat(data.position.y);
+
+        const axes = [x, y];
+        const buttons = [];
+        const joyMessage = new ROSLIB.Message({ axes });
+        controlsTopicListener.publish(joyMessage);
+    }
+}
+
+
 </script>
 
 <div class="aligning-container">
