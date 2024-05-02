@@ -72,7 +72,7 @@
 				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Home</a
 			>
 		</li>
-		<li>
+		<!-- <li>
 			<a
 				href="/monitoring"
 				class={activePage === '/monitoring' ? 'active' : ''}
@@ -86,6 +86,14 @@
 				class={activePage === '/controls' ? 'active' : ''}
 				on:click={handleNavLinkClick}
 				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Controls</a
+			>
+		</li> -->
+		<li>
+			<a
+				href="/robot"
+				class={activePage === '/robot' ? 'active' : ''}
+				on:click={handleNavLinkClick}
+				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Robot</a
 			>
 		</li>
 		<li>

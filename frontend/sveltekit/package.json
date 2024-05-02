@@ -25,6 +25,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@googlemaps/js-api-loader": "^1.16.6",
 		"nipplejs": "^0.10.1",
 		"roslib": "^1.4.1"
 	}
