@@ -16,15 +16,19 @@ class WebInterfaceController:
 
     def joy_callback(self, data):
         # Print received joystick commands
-        print("Received joystick commands:")
-        print("Axes:", data.axes)
-        print("Buttons:", data.buttons)
+        # print("Received joystick commands:")
+        # print("Axes:", data.axes)
+        # print("Buttons:", data.buttons)
 
         # Process joystick commands and send velocity commands to move the robot
         twist = Twist()
         twist.linear.x = data.axes[1]  # Assuming forward/backward movement
         twist.angular.z = data.axes[0]  # Assuming rotation
         self.cmd_vel_pub.publish(twist)
+
+        print("Received joystick commands:")
+        print("Axes:", twist.linear.x)
+        print("Angular:", twist.linear.z)
 
 def main():
     controller = WebInterfaceController()

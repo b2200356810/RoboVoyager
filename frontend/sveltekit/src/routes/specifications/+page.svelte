@@ -1,39 +1,3 @@
-<script>
-	import { rosStore } from '$lib/stores/rosStore.js';
-	import { onMount, onDestroy } from 'svelte';
-	import ROSLIB from 'roslib';
-
-	let ros;
-	let terminalTopicListener;
-	onMount(() => {
-		const unsubscribe = rosStore.subscribe((value) => {
-			if (value !== null) {
-				ros = value;
-				console.log('Inside specifications');
-				subscribeToTerminalTopic();
-			}
-		});
-	});
-
-	onDestroy(() => {
-		if (terminalTopicListener) {
-			terminalTopicListener.unsubscribe();
-		}
-	});
-
-	function subscribeToTerminalTopic() {
-		terminalTopicListener = new ROSLIB.Topic({
-			ros,
-			name: '/terminal_topic',
-			messageType: 'std_msgs/String'
-		});
-
-		terminalTopicListener.subscribe((message) => {
-			console.log(message.data);
-		});
-	}
-</script>
-
 <div class="specifications-container">
 	<h2>Specifications</h2>
 
@@ -71,8 +35,6 @@
 			</li>
 			<li><strong>Storage:</strong> 64GB eMMC 5.1</li>
 			<li><strong>Networking:</strong> 1x GbE 1x 10GbE</li>
-
-			<!-- Add more details as needed -->
 		</ul>
 	</div>
 
@@ -81,7 +43,6 @@
 		<ul>
 			<li><strong>Resolution:</strong> [Specify resolution]</li>
 			<li><strong>FPS:</strong> [Specify frames per second]</li>
-			<!-- Add more details as needed -->
 		</ul>
 	</div>
 

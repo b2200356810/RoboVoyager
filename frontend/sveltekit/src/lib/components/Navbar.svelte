@@ -72,22 +72,6 @@
 				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Home</a
 			>
 		</li>
-		<!-- <li>
-			<a
-				href="/monitoring"
-				class={activePage === '/monitoring' ? 'active' : ''}
-				on:click={handleNavLinkClick}
-				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Monitoring</a
-			>
-		</li>
-		<li>
-			<a
-				href="/controls"
-				class={activePage === '/controls' ? 'active' : ''}
-				on:click={handleNavLinkClick}
-				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Controls</a
-			>
-		</li> -->
 		<li>
 			<a
 				href="/robot"
@@ -102,14 +86,6 @@
 				class={activePage === '/specifications' ? 'active' : ''}
 				on:click={handleNavLinkClick}
 				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Specifications</a
-			>
-		</li>
-		<li>
-			<a
-				href="/contact"
-				class={activePage === '/contact' ? 'active' : ''}
-				on:click={handleNavLinkClick}
-				tabindex={isDesktop || isMenuActive ? '0' : '-1'}>Contact</a
 			>
 		</li>
 	</ul>
