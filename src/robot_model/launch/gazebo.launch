@@ -1,5 +1,0 @@
-<launch>
-    <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
-    <param name="robot_model" textfile="$(find robot_model)/urdf/differential_drive.urdf"/>
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model differential_drive -param robot_model"/>
-</launch>

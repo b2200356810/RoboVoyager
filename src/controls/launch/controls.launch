@@ -1,3 +1,0 @@
-<launch>
-    <node name='controls_node' pkg='controls' type='controls.py' output="screen" respawn="true" />
-</launch>

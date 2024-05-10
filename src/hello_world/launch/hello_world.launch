@@ -1,3 +1,0 @@
-<launch>
-    <node name='hello_world_node' pkg='hello_world' type='hello_world.py' output="screen" respawn="true" />
-</launch>

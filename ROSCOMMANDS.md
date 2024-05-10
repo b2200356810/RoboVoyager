@@ -317,3 +317,6 @@ rostopic bw /video_streaming_topic
 ROS Tools:
 
 You can use tools like rostopic bw to get bandwidth information, which includes the rate and the average message size. While this won't give you the exact size of each message, it can provide an average.
+
+DEPENDENCIES
+sudo apt-get install ros-noetic-serial

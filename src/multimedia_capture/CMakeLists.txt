@@ -9,7 +9,6 @@ project(multimedia_capture)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  mongodb_store
   rospy
   sensor_msgs
 )
@@ -106,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES multimedia_capture
-#  CATKIN_DEPENDS cv_bridge mongodb_store rospy sensor_msgs
+#  CATKIN_DEPENDS cv_bridge rospy sensor_msgs
 #  DEPENDS system_lib
 )
 
