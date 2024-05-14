@@ -108,7 +108,7 @@
 	:global(.dark-theme) {
 		--navbar-background: #2e2e2e;
 		--hamburger-hover: white;
-		--theme-button-border: 1px solid #383838;
+		--theme-button-border: 1px solid #434343;
 		--theme-button-border-hover: 1px solid #e6e6e6;
 		--theme-button-position: translate(30px, 0%);
 		--theme-button-div-background: #383838;

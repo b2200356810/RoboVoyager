@@ -25,8 +25,10 @@ def streamer():
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # cap.set(cv2.CAP_PROP_FPS, 1)
     fps = cap.get(cv2.CAP_PROP_FPS)
+    # target_width, target_height = 426, 240
+    target_width, target_height = 100, 100
 
-    rate = rospy.Rate(fps)
+    rate = rospy.Rate(100)
 
     print('\nCamera is open:', cap.isOpened())
     print(f"Codec: {decode_fourcc(codec)}")
@@ -37,9 +39,15 @@ def streamer():
         ret, frame = cap.read()
         if not ret:
             break
+        
+        # frame = frame[:, :width // 2, :]
+
+        frame = cv2.resize(frame, (target_width, target_height))
 
         _, frame = cv2.imencode('.jpg', frame)
         # cv2.imshow('Video', frame)
+
+        # print("Before compress", sys.getsizeof(frame.tobytes()))
 
         msg = CompressedImage()
         msg.header.stamp = rospy.Time.now()
@@ -64,3 +72,4 @@ if __name__ == '__main__':
         streamer()
     except rospy.ROSInterruptException:
         pass
+
