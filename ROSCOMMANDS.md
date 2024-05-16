@@ -1,84 +1,114 @@
-# ROS commands
+# ROS Commands
 
-List of commands for installing and using ROS **Noetic Ninjemys** (Ubuntu 20 dependency)
+List of commands for installing and using ROS **Noetic Ninjemys** (on Ubuntu 20.04)
 
-## 1 Line Install
+The basic commands are:
 
-```bash
+```sh
+roscore
+rosnode # list, info
+rostopic # list, info, echo
+rosservice # list, info
+roslaunch # package_name package_name.launch
+```
+
+Double tab is your best friend for anything ROS or Linux related. Try testing out any command with typing a few letters and getting some information (i.e. ros+double_tab cat+double_tab).
+
+##
+
+#### Single Line Install (ROS)
+
+```sh
 wget -c https://raw.githubusercontent.com/qboticslabs/ros_install_noetic/master/ros_install_noetic.sh && chmod +x ./ros_install_noetic.sh && ./ros_install_noetic.sh
 ```
 
-## Source ROS
+##
 
-```bash
-nano ~/.bashrc
-source /opt/ros/noetic/setup.bash
+#### Source ROS
+
+```sh
+echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 ```
 
-### Catkin Workspace
+##
 
-Make a folder for your workspace and put empty src directory inside it. Then run catkin_make to generate devel, build folders.
+#### Run ROS Master Process
 
-```bash
+Some third party packages initialize the master process without the need to run roscore.
+
+```sh
+roscore
+```
+
+##
+
+#### Make New Catkin Workspace
+
+Make a folder for your workspace and put an empty src directory inside it. Then run catkin_make to generate <code>devel</code> and <code>build</code> folders.
+
+```sh
 mkdir -p ~/your_workspace/src
 catkin_make
 ```
 
-## Source the workspace
+##
 
-```bash
-nano ~/.bashrc
+#### Source Your Workspace
+
+This is not strictly necessary but it's for convenience's sake. You won't have to source your project's workspace every new session.
+
+```sh
+gedit ~/.bashrc
+
+# Scroll to the bottom and append your workspace after: source /opt/ros/noetic/setup.bash
 source ~/your_workspace/devel/setup.bash
 ```
 
-# Rosbridge server
+##
 
-sudo apt install ros-noetic-rosbridge-server
-roslaunch rosbridge_server rosbridge_websocket.launch
-
-# node listener
-
-rostopic echo /first_node_topic
-
-# python executable
-
-chmod +x first_node.py
-
-# send message from terminal to browser
-
-rostopic pub /terminal_topic std_msgs/String "data: 'Hello world! '" -1
-
-# shell build
-
-chmod +x start_ros.sh
-
-#shell start
-./start_ros.sh
-
-#IF CATKIN GETS CORRUPTED
-sudo apt-get install --reinstall ros-noetic-catkin
-
-##Check video resolution (Ubuntu)
-v4l2-ctl -d /dev/video0 --list-formats-ext
-##Install with
-sudo apt install v4l-utils
-
-##Open CV info for image encoders, video codecs, etc
-
-print(cv2.getBuildInformation())
-
-## setup environment
-
-[Ros launch command not found](https://answers.ros.org/question/264704/ros-launch-command-not-found/)
+#### Source Terminal Session
 
 ```sh
-echo "source <catkin_ws_dir>/devel/setup.bash" >> ~/.bashrc
-~/.bashrc
+# cd inside ~/your_workspace
+source devel/setup.bash
 ```
 
-This solves `Command 'roslaunch' not found`.
+##
 
-## list installed packages
+#### Listen To a Topic
+
+```sh
+# roscore must be running in one terminal tab
+# then run rostopic echo in another tab
+rostopic echo / # hit tab twice to list available/active topics
+```
+
+##
+
+#### Create New ROS Node/Package
+
+[CreatingPackage](http://wiki.ros.org/cn/ROS/Tutorials/catkin/CreatingPackage)
+
+> NOTE: MUST BE IN THE SRC OF THE WORKSPACE
+
+```sh
+cd ~/your_workspace/src # must cd here and then run catkin_create_pkg
+#catkin_create_pkg package_name dependency1 dependency2 language
+catkin_create_pkg beginner_tutorials std_msgs rospy roscpp
+# You can add as many dependencies as you want
+# Dependencies and languages can be written out of order, but the package name must be written after catkin_create_pkg
+```
+
+##
+
+#### Remove Package
+
+Just delete the folder.
+
+##
+
+#### List Installed Packages
 
 [How do I find the list of installed ROS packages?](http://wiki.ros.org/FAQ#How_do_I_find_the_list_of_installed_ROS_packages.3F)
 
@@ -86,104 +116,79 @@ This solves `Command 'roslaunch' not found`.
 rospack list-names
 ```
 
-## catkin_create_pkg
+##
 
-[CreatingPackage](http://wiki.ros.org/cn/ROS/Tutorials/catkin/CreatingPackage)
+#### Python Executable
 
-```sh
-cd ~/catkin_ws/src # must cd here and then catkin_create_pkg!
-catkin_create_pkg beginner_tutorials std_msgs rospy roscpp
-```
-
-## remove package
-
-[catkin: move/remove package and workspace](https://answers.ros.org/question/105576/catkin-moveremove-package-and-workspace/)
-Just delete the folder.
-
-## catkin_make && source devel/setup.bash
-
-[roscd: No such package/stack 'beginner_tutorials'](https://answers.ros.org/question/65003/roscd-no-such-packagestack-beginner_tutorials/)
+First, you have to make a .py file inside src folder.
 
 ```sh
-# in "catkin_ws" directory
-# catkin_create_pkg learning_tf2 tf2 tf2_ros roscpp rospy turtlesim
-catkin_make
-source devel/setup.bash
-# roscd learning_tf2
+chmod +x your_node.py # Must cd into ~/your_workspace/src/your_package/src
 ```
 
-This solves `roscd: No such package/stack 'learning_tf2'`.
+##
 
-## catkin_make specific package
-
-[How to build just one package using catkin_make?](https://answers.ros.org/question/54178/how-to-build-just-one-package-using-catkin_make/)
+#### Run Node
 
 ```sh
-catkin_make --only-pkg-with-deps <target_package>
+# Must have first created an executable of the file in the node/package
+rosrun your_package your_node.py
+# rosrun + double tab reveals list of packages that can be run
 ```
 
-## /usr/bin/env: ‘python’: No such file or directory
+##
 
-[Unable to broadcast the turtle position to tf2 , Tutorial: turtle_tf2_demo.launch and getting only one turtle](https://answers.ros.org/question/357423/unable-to-broadcast-the-turtle-position-to-tf2-tutorial-turtle_tf2_demolaunch-and-getting-only-one-turtle/)
+#### Bandwidth
+
+You can use tools like rostopic bw to get bandwidth information, which includes the rate and the average message size. While this won't give you the exact size of each message, it can provide an average.
 
 ```sh
-sudo ln -s /usr/bin/python3 /usr/bin/python
+rostopic bw /video_streaming_topic
 ```
 
-## [ERROR] [1628307689.337043638]: [registerPublisher] Failed to contact master at [localhost:11311]. Retrying...
+##
 
-This can be solved by running:
+#### If Catkin Workspace Gets Corrupted
 
 ```sh
-roscore
+sudo apt-get install --reinstall ros-noetic-catkin
 ```
 
-[roscore](http://wiki.ros.org/roscore)
+##
 
-```
-roscore is a collection of nodes and programs that are pre-requisites of a ROS-based system.
-You must have a roscore running in order for ROS nodes to communicate. It is launched using the roscore command.
-```
+---
 
-## Exception thrown:"turtle1" passed to lookupTransform argument source_frame does not exist.
-
-In [Writing a tf2 broadcaster (C++)](http://wiki.ros.org/tf2/Tutorials/Writing%20a%20tf2%20broadcaster%20%28C%2B%2B%29),
-when running:
+## Dependencies
 
 ```sh
-roslaunch learning_tf2 start_demo.launch
+# Rosbridge Server
+sudo apt install ros-noetic-rosbridge-server
+roslaunch rosbridge_server rosbridge_websocket.launch
+
+# Video 4 Linux
+sudo apt install v4l-utils
+# Check resolution end codec formats supported
+v4l2-ctl -d /dev/video0 --list-formats-ext
+
+# OpenCV
+sudo apt install opencv
+
+# Shell Build
+chmod +x test.sh
+# Shell Run
+./test.sh
+
+# Serial for GPS
+sudo apt-get install ros-noetic-serial
 ```
 
-It shows:
+##
 
-```
-Failure at 1628308374.969766010
-Exception thrown:"turtle" passed to lookupTransform argument source_frame does not exist.
-The current list of frames is:
-Frame turtle1 exists with parent world.
-```
+---
 
-It turns out that we should create a folder named `launch` and put `start_demo.launch` there.
+# ROS Commands from other repos
 
-```sh
-# in catkin_ws/src/learning_tf2
-mkdir launch
-vim launch/start_demo.launch # fill it
-# and then roslaunch again
-roslaunch learning_tf2 start_demo.launch
-```
-
-It will successfully outputs:
-
-```
-At time 1628308379.856
-- Translation: [6.698, 4.107, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, -0.606, 0.796]
-            in RPY (radian) [0.000, 0.000, -1.301]
-            in RPY (degree) [0.000, 0.000, -74.531]
-```
-
-## rosbag info
+#### rosbag info
 
 [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data)
 
@@ -202,21 +207,6 @@ rosls roscpp_tutorials
 To create a workspace
 catkin_init_workspace
 
-To find available packages
-apt-cache search ros-indigo
-
-To create a package
-catkin_create_pkg <package_name> [depend1] [depend2] [depend3]
-catkin_create_pkg beginner_tutorials std_msgs rospy roscpp
-To build a package
-catkin_make
-Sourcing newly built package
-. ~/catkin_ws/devel/setup.bash
-Checking dependencies of a package
-rospack depends1 beginner_tutorials
-
-Error while running roscore, change permission of ros folder using below
-sudo chown -R <your_username> ~/.ros
 List all ROS Nodes
 rosnode list
 Getting info about a node
@@ -281,11 +271,6 @@ rosrun rqt_logger_level rqt_logger_level
 Hitting wall to simulate error
 rostopic pub /turtle1/cmd_vel geometry_msgs/Twist -r 1 -- '{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'
 
-All rqt tools
-rqt
-Only graph
-rqt_graph
-
 msg: msg files are simple text files that describe the fields of a ROS message. They are used to generate source code for messages in different languages.
 srv: an srv file describes a service. It is composed of two parts: a request and a response.  
 Copying service from another package to working package
@@ -312,11 +297,3 @@ rosrun sound_play soundplay_node.py
 rosrun sound_play say.py 'Hello world'
 
 echo $ROS_PACKAGE_PATH will give paths where ROS packages are installed
-
-rostopic bw /video_streaming_topic
-ROS Tools:
-
-You can use tools like rostopic bw to get bandwidth information, which includes the rate and the average message size. While this won't give you the exact size of each message, it can provide an average.
-
-DEPENDENCIES
-sudo apt-get install ros-noetic-serial
