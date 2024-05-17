@@ -6,6 +6,7 @@
 	const { Loader } = GMaps;
 
 	let ros;
+	let mapElement;
 
 	let terminalTopicListener;
 	let terminalTopicData;
@@ -14,21 +15,8 @@
 	let sensorsTopicListener;
 	let sensorsTopicData = {};
 
-	let commandVelocity;
-
 	let joystick;
-	let debugPositionX = '-';
-	let debugPositionY = '-';
-	let debugForce = '-';
-	let debugPressure = '-';
-	let debugDistance = '-';
-	let debugAngleRadian = '-';
-	let debugAngleDegree = '-';
-	let debugDirectionX = '-';
-	let debugDirectionY = '-';
-	let debugDirectionAngle = '-';
-
-	let mapElement;
+	let commandVelocity;
 
 	let showAI = false;
 	let showMap = true;
@@ -150,44 +138,17 @@
 			mode: 'static',
 			position: { left: '50%', top: '50%' },
 			color: 'red',
-			size: 80,
+			size: 100,
 			restOpacity: 0.8
 		});
 
 		joystick.on('move', (evt, data) => {
-			updateDebugFields(data);
 			publishJoystickCommands(data);
 		});
 
-		joystick.on('end', () => {
-			resetDebugFields();
+		joystick.on('end', (data) => {
+			publishJoystickCommandsSTOP();
 		});
-	};
-
-	const updateDebugFields = (data) => {
-		debugPositionX = data.position.x.toFixed(2);
-		debugPositionY = data.position.y.toFixed(2);
-		debugForce = data.force.toFixed(2);
-		debugPressure = data.pressure.toFixed(2);
-		debugDistance = data.distance.toFixed(2);
-		debugAngleRadian = data.angle.radian.toFixed(2);
-		debugAngleDegree = data.angle.degree.toFixed(2);
-		debugDirectionX = data.direction.x !== undefined ? data.direction.x : '-';
-		debugDirectionY = data.direction.y !== undefined ? data.direction.y : '-';
-		debugDirectionAngle = data.direction.angle !== undefined ? data.direction.angle : '-';
-	};
-
-	const resetDebugFields = () => {
-		debugPositionX = '-';
-		debugPositionY = '-';
-		debugForce = '-';
-		debugPressure = '-';
-		debugDistance = '-';
-		debugAngleRadian = '-';
-		debugAngleDegree = '-';
-		debugDirectionX = '-';
-		debugDirectionY = '-';
-		debugDirectionAngle = '-';
 	};
 
 	function subscribeToControlsTopic() {
@@ -199,28 +160,81 @@
 	}
 
 	function publishJoystickCommands(data) {
-		let xAxis = parseFloat(0);
-		let zAxis = parseFloat(0);
-		let force = parseFloat(data.force);
+		// Up Down
+		let xAxis = 0.0;
+		//  Left Right (turning)
+		let zAxis = 0.0;
+		// Speed
+		let force = parseFloat(data.force).toFixed(2);
+		// Actual direction (right of circle is 0)
 		let degree = parseFloat(data.angle.degree);
 
+		// Limit the speed
 		if (force > 1.0) force = 1.0;
 
-		if (degree > 45 && degree < 135) xAxis = force;
-		if (degree > 135 && degree < 225) zAxis = force;
-		if (degree > 225 && degree < 315) xAxis = -force;
-		if ((degree > 315 && degree < 360) || (degree > 0 && degree < 45)) zAxis = -force;
+		let turnRate = 2;
+
+		// UP
+		if (degree > 60 && degree < 120) xAxis = force;
+		// DOWN
+		if (degree > 240 && degree < 300) xAxis = -force;
+		// LEFT
+		if (degree > 150 && degree < 210) zAxis = force;
+		// RIGHT
+		if ((degree > 0 && degree < 30) || (degree > 330 && degree < 360)) zAxis = -force;
+
+		// LEFT UP
+		if (degree > 120 && degree < 150) {
+			xAxis = force / turnRate;
+			zAxis = force / turnRate;
+		}
+		// LEFT DOWN
+		if (degree > 210 && degree < 240) {
+			xAxis = -force / turnRate;
+			zAxis = force / turnRate;
+		}
+		// RIGHT UP
+		if (degree > 30 && degree < 60) {
+			xAxis = force / turnRate;
+			zAxis = -force / turnRate;
+		}
+		// RIGHT DOWN
+		if (degree > 300 && degree < 330) {
+			xAxis = -force / turnRate;
+			zAxis = -force / turnRate;
+		}
+
+		// console.log('X:', xAxis);
+		// console.log('Z:', zAxis);
 
 		const twist = new ROSLIB.Message({
 			linear: {
-				x: xAxis,
-				y: 0,
-				z: 0
+				x: parseFloat(xAxis),
+				y: 0.0,
+				z: 0.0
 			},
 			angular: {
-				x: 0,
-				y: 0,
-				z: zAxis
+				x: 0.0,
+				y: 0.0,
+				z: parseFloat(zAxis)
+			}
+		});
+
+		if (commandVelocity) commandVelocity.publish(twist);
+		else console.error('Command velocity topic not initialized');
+	}
+
+	function publishJoystickCommandsSTOP() {
+		const twist = new ROSLIB.Message({
+			linear: {
+				x: 0.0,
+				y: 0.0,
+				z: 0.0
+			},
+			angular: {
+				x: 0.0,
+				y: 0.0,
+				z: 0.0
 			}
 		});
 
@@ -238,7 +252,7 @@
 		videoTopicListener.subscribe(
 			(message) => {
 				videoTopicData = message.data;
-				// console.log(message.data.length / 1000);
+				console.log(message.data.length / 1000);
 				// console.log(`Size of received image: ${videoTopicData.length / 1024} KB`);
 			},
 			(error) => {
@@ -466,7 +480,9 @@
 		</div>
 		<div class="robot-container-footer-wrapper">
 			<div class="empty"></div>
-			<div id="joystick-container" style="visibility: {showControls ? 'visible' : 'hidden'}"></div>
+			<div id="joystick-container" style="visibility: {showControls ? 'visible' : 'hidden'}">
+				<!-- <img src="images/degree_wheel.png" alt="" style="width:100%; height:100%" /> -->
+			</div>
 			<div class="robot-container-navigation" style="visibility: {showMap ? 'visible' : 'hidden'}">
 				<!-- <div>GPS</div> -->
 				<div bind:this={mapElement}>gps</div>
@@ -536,9 +552,9 @@
 
 	.robot-container-footer-wrapper {
 		display: flex;
-		height: 120px;
+		/* height: 120px; */
 		justify-content: space-between;
-		padding: 10px;
+		padding: 20px 10px;
 		gap: 20px;
 	}
 
@@ -552,6 +568,10 @@
 	#joystick-container {
 		position: relative;
 		border-radius: 50%;
+		/* background: url(/images/degree_wheel.jpg);
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center; */
 	}
 
 	.robot-container-navigation div {
