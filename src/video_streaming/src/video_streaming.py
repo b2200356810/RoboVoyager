@@ -6,10 +6,16 @@ import rospy
 from sensor_msgs.msg import CompressedImage
 # print(cv2.getBuildInformation())
 
+# For terminal to look up supported codecs and resolutions
+# v4l2-ctl -d /dev/video0 --list-formats-ext
+
 def decode_fourcc(cc):
     return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
 
 def streamer():
+
+    # IMPORTANT! 
+    target_width, target_height, target_fps = 1000, 1000, 30
 
     rospy.init_node('video_streaming_node')
     pub = rospy.Publisher('/video_streaming_topic', CompressedImage, queue_size = 10)
@@ -17,36 +23,18 @@ def streamer():
     cap = cv2.VideoCapture(0)
     # cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG')) # Not supported by Zed2
     codec = cap.get(cv2.CAP_PROP_FOURCC)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1344)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 376)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    cap.set(cv2.CAP_PROP_FPS, 30) # Careful with the fps
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, target_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, target_height)
+    cap.set(cv2.CAP_PROP_FPS, target_fps) # Careful with the fps
+    camera_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    camera_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     rate = rospy.Rate(fps)
 
-    target_width, target_height = 100, 100
-
-    # Open a single frame to get original image size 
-    ret, frame = cap.read()
-    frame_size = round(sys.getsizeof(frame.tobytes()) / 1024, 2)
-    frame = frame[:, :width // 2, :]
-    _, frame = cv2.imencode('.jpg', frame)
-
     print('\nCamera is open:', cap.isOpened())
     print(f"Codec: {decode_fourcc(codec)}")
-    print(f"Resolution: {width}x{height}")
+    print(f"Resolution: {camera_width}x{camera_height}")
     print(f"FPS: {fps}")
-    print("Frame size:", str(frame_size) + "KB")
-
-    # Lower resolution and test new image size
-    frame = cv2.resize(frame, (target_width, target_height))
-    new_height, new_width = frame.shape[:2]
-    frame_size = round(sys.getsizeof(frame.tobytes()) / 1024, 2)
-
-    print("After resizing...")
-    print(f"Resolution: {new_width}x{new_height}")
-    print("Frame size:", frame_size, "KB")
     print()
 
     while not rospy.is_shutdown():
@@ -54,9 +42,9 @@ def streamer():
         if not ret:
             break
         
-        frame = frame[:, :width // 2, :]
+        # Resizing to even smaller resolution
+        # frame = frame[:, :width // 2, :]
         frame = cv2.resize(frame, (target_width, target_height))
-
         _, frame = cv2.imencode('.jpg', frame)
         # cv2.imshow('Video', frame)
 
@@ -69,8 +57,8 @@ def streamer():
         msg.data = frame.tobytes()
         pub.publish(msg)
 
-        # size_kb = str(round(sys.getsizeof(msg.data) / 1024, 2))
-        # print(f"After  compression: {size_kb} KB")
+        size_kb = str(round(sys.getsizeof(msg.data) / 1024, 2))
+        print(f"After  compression: {size_kb} KB")
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

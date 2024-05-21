@@ -1,40 +1,62 @@
 <div class="specifications-container">
-	<section class="robot gap">
-		<div class="robot-header">
+	<section class="robot">
+		<div class="robot-title">
 			<h2>Robot</h2>
 		</div>
-		<div class="robot-body">
+
+		<div class="robot-description">
 			<p>
 				RoboVoyager is a differential, two wheeled robot. It has 4 smaller supporting wheels that
 				aren't operable, a base, and a stand part. The base contains a battery and motors while the
-				stand has a camera and lidar mounted on it. It also has emergency button, <strong
-					style="color: red;">this button, and that button</strong
-				>.
+				stand has a camera and lidar mounted on it. It also has power, emergency and LED buttons
+				(disabled). Emergency button is portruded and if the robot collides from the front, it will
+				disable the motor functions
 			</p>
 		</div>
-		<div class="robot-footer">
-			<div class="robot-footer-item robot-specifications">
-				<h3>Base: <span>50cm x 50cm x 50cm</span></h3>
-				<h3>Stand: <span>70cm x 20cm x 10cm</span></h3>
-				<h3>B + S: <span>120cm x 70cm x 60cm</span></h3>
-				<h3>Speed: <span>0.5m/s</span></h3>
-				<h3>Battery: <span>20WH</span></h3>
-				<h3>Weight: <span>70kg</span></h3>
-			</div>
-			<div class="robot-footer-item">
-				<input type="checkbox" id="zoomCheckFooter" />
-				<label for="zoomCheckFooter">
-					<img class="footer-img" src="images/robot.png" alt="" />
-				</label>
-			</div>
+
+		<div class="robot-specifications">
+			<div class="specification-label">Base</div>
+			<div class="specification-value">50cm (height) x 50cm (width) x 50cm (length)</div>
+
+			<div class="specification-label">Stand</div>
+			<div class="specification-value">70 cm x 20 cm x 10 cm</div>
+
+			<div class="specification-label">Base + Stand</div>
+			<div class="specification-value">120 cm x 70 cm x 60 cm</div>
+
+			<div class="specification-label">Speed</div>
+			<div class="specification-value">1.5 m/s</div>
+
+			<div class="specification-label">Locomotion</div>
+			<div class="specification-value">2 x BLDC Motor, Femsan, 0,25 kw 2600 rpm 24 V</div>
+
+			<div class="specification-label">Weight</div>
+			<div class="specification-value">55 kg</div>
+
+			<div class="specification-label">Battery</div>
+			<div class="specification-value">40 AH (24 V)</div>
+
+			<div class="specification-label">DC - DC Converter</div>
+			<div class="specification-value">24 V to 5 V, 60 W</div>
+
+			<div class="specification-label">DC - DC Converter</div>
+			<div class="specification-value">24 V to 12 V, 60 W</div>
+		</div>
+
+		<div class="robot-images">
+			<input type="checkbox" id="zoomCheckFooter" />
+			<label for="zoomCheckFooter">
+				<img class="footer-img" src="images/robot.png" alt="" />
+			</label>
 		</div>
 	</section>
 
 	<section class="computer gap">
-		<div class="computer-header">
+		<div class="computer-title">
 			<h2>Computer</h2>
 		</div>
-		<div class="computer-body gap">
+
+		<div class="computer-description">
 			<p>
 				The robot's computer is
 				<a
@@ -46,30 +68,29 @@
 				and performance-per-watt, enabling longer battery life and more responsive robotic
 				operations.
 			</p>
-			<div class="computer-images">
-				<div>
-					<input type="checkbox" id="zoomCheck1" />
-					<label for="zoomCheck1"
-						><img class="" src="images/jetson/jetson_front.jpg" alt="" /></label
-					>
-				</div>
+		</div>
 
-				<div>
-					<input type="checkbox" id="zoomCheck2" />
-					<label for="zoomCheck2"><img class="" src="images/jetson/jetson_side.jpg" alt="" /></label
-					>
-				</div>
+		<div class="computer-images">
+			<div>
+				<input type="checkbox" id="zoomCheck1" />
+				<label for="zoomCheck1"><img class="" src="images/jetson/jetson_front.jpg" alt="" /></label>
+			</div>
 
-				<div>
-					<input type="checkbox" id="zoomCheck3" />
-					<label for="zoomCheck3"
-						><img class="" src="images/jetson/jetson_motherboard.png" alt="" /></label
-					>
-					<!-- https://developer.nvidia.com/embedded/learn/jetson-agx-orin-devkit-user-guide/developer_kit_layout.html -->
-				</div>
+			<div>
+				<input type="checkbox" id="zoomCheck2" />
+				<label for="zoomCheck2"><img class="" src="images/jetson/jetson_side.jpg" alt="" /></label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="zoomCheck3" />
+				<label for="zoomCheck3"
+					><img class="" src="images/jetson/jetson_motherboard.png" alt="" /></label
+				>
+				<!-- https://developer.nvidia.com/embedded/learn/jetson-agx-orin-devkit-user-guide/developer_kit_layout.html -->
 			</div>
 		</div>
-		<div class="computer-footer">
+
+		<div class="computer-specifications">
 			<div class="specification">
 				<h3>CPU</h3>
 				<ul>
@@ -163,7 +184,7 @@
 	</section>
 
 	<section class="peripherals">
-		<div class="peripherals-header">
+		<div class="peripherals-title">
 			<h2>Peripherals</h2>
 		</div>
 		<div class="peripherals-body">
@@ -330,56 +351,50 @@
 </div>
 
 <style>
-	:root {
-		--filter-image: invert(0);
+	:global(nav) {
+		position: relative !important;
 	}
 
-	:global(.dark-theme) {
-		--filter-image: invert(0.9);
+	.specifications-container {
+		padding: 20px 10px;
 	}
 
 	section {
-		padding: 20px;
-		border-top: 2px solid var(--text-color);
-	}
-
-	section:first-child {
-		border: none;
-	}
-
-	.gap {
 		display: grid;
 		gap: 20px;
-	}
-
-	.robot-footer {
-		display: flex;
-		gap: 20px;
-		justify-content: center;
-		align-items: center;
-		position: relative;
-	}
-
-	.robot-footer-item {
-		width: 50%;
+		padding: 20px;
+		margin-bottom: 20px;
+		border: 1px solid var(--text-color);
+		border-radius: 15px;
+		box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.3);
+		background-color: var(--section-background);
 	}
 
 	.robot-specifications {
 		display: grid;
-		gap: 10px;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px 5px;
 	}
 
-	.robot-specifications h3 {
-		padding-bottom: 5px;
-		border-bottom: 1px solid var(--text-color);
+	.specification-label,
+	.specification-value {
+		border-bottom: 1px solid white;
 	}
 
-	.robot-specifications h3 span {
-		font-size: 1.6rem;
-		font-weight: 300;
+	.specification-label {
+		font-weight: 800;
+		/* align-self: end; */
 	}
 
-	.robot-footer img {
+	.robot-images {
+		/* display: flex;
+		gap: 20px;
+		justify-content: center;
+		align-items: center; */
+		position: relative;
+	}
+
+	.robot-images img {
 		height: 100%;
 		width: 100%;
 		border: 1px solid var(--text-color);
@@ -402,7 +417,7 @@
 	.computer-images {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-		gap: 10px;
+		gap: 20px;
 		justify-items: center;
 		position: relative;
 	}
@@ -416,25 +431,22 @@
 		background-color: white;
 	}
 
-	.computer-footer {
+	.computer-specifications {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 		gap: 20px;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	}
 
 	.specification {
-		border: 1px solid var(--text-color);
 		padding: 20px;
+		border: 1px solid var(--text-color);
+		border-radius: 15px;
 		display: grid;
 		gap: 10px;
 	}
 
 	.specification ul {
 		list-style-type: none;
-	}
-
-	.peripherals-header {
-		padding-bottom: 20px;
 	}
 
 	.peripheral {

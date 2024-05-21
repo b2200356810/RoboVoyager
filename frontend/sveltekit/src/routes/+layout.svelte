@@ -1,7 +1,7 @@
 <script>
+	import { onMount, onDestroy } from 'svelte';
 	import Navbar from '../lib/components/Navbar.svelte';
 	import ROSLIB from 'roslib';
-	import { onMount, onDestroy } from 'svelte';
 	import { rosStore } from '$lib/stores/rosStore.js';
 
 	let ros;
@@ -57,8 +57,8 @@
 
 	:root {
 		font-size: 62.5%;
-		--text-color: #5c5c5c;
-		--background-color: #ffffff;
+		--text-color: #555555;
+		--background-color: #f6f6f6;
 		--theme-transition-time: 0.4s ease-in-out;
 
 		--page-display: initial;
@@ -66,7 +66,7 @@
 
 	:global(.dark-theme) {
 		--text-color: #e6e6e6;
-		--background-color: #1a1a1a;
+		--background-color: #4e4e4e;
 	}
 
 	:global(body) {

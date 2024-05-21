@@ -96,17 +96,17 @@
 
 <style>
 	:root {
-		--navbar-background: #ffffff;
+		--navbar-background: #cac1b5;
 		--hamburger-hover: black;
-		--theme-button-border: 1px solid #b0b0b0;
+		--theme-button-border: 1px solid #818181;
 		--theme-button-border-hover: 1px solid #212121;
+		--theme-button-div-background: #f6f6f6;
 		--theme-button-position: translate(2px, 0%);
-		--theme-button-div-background: #e6f1ff;
 		--theme-button-icon: url('/images/moon.svg');
 	}
 
 	:global(.dark-theme) {
-		--navbar-background: #2e2e2e;
+		--navbar-background: #313131;
 		--hamburger-hover: white;
 		--theme-button-border: 1px solid #434343;
 		--theme-button-border-hover: 1px solid #e6e6e6;
@@ -171,12 +171,12 @@
 		width: 60px;
 		align-self: center;
 		cursor: pointer;
-		border-radius: 15px;
+		border-radius: 14px;
 		border: var(--theme-button-border);
 		transition:
 			border 0.3s,
 			background-color var(--theme-transition-time);
-		background-color: var(--navbar-background);
+		background-color: var(--background-color);
 	}
 
 	#theme-button:hover {
@@ -191,7 +191,7 @@
 		transition: 0.5s ease-out;
 		content: var(--theme-button-icon);
 		transform: var(--theme-button-position);
-		background-color: var(--theme-button-div-background);
+		background-color: var(--navbar-background);
 	}
 
 	nav ul {
@@ -250,7 +250,7 @@
 			margin-top: 0;
 		}
 		nav {
-			position: initial;
+			position: relative;
 			margin-top: 0;
 		}
 		nav ul,
