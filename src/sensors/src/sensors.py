@@ -6,7 +6,7 @@ from std_msgs.msg import String
 import time
 import os
 import json
-import pynvml
+# import pynvml
 
 def get_kernel_info():
     return {
@@ -53,7 +53,8 @@ def get_system_uptime():
     return {"uptime": uptime_str}
 
 def get_network_usage():
-    wifi_interface = "wlp5s0"  # Change this to your Wi-Fi interface name
+    # wifi_interface = "wlp5s0"  # Change this to your Wi-Fi interface name
+    wifi_interface = "wlan0"
     net_stat = psutil.net_io_counters(pernic=True, nowrap=True)[wifi_interface]
     net_in_1 = net_stat.bytes_recv
     net_out_1 = net_stat.bytes_sent
@@ -70,31 +71,31 @@ def get_network_usage():
         "megabytes_received_per_second": megabytes_received_per_second
     }
 
-def get_gpu_info():
-    pynvml.nvmlInit()
-    gpu_count = pynvml.nvmlDeviceGetCount()
-    gpu_info = []
+# def get_gpu_info():
+#     pynvml.nvmlInit()
+#     gpu_count = pynvml.nvmlDeviceGetCount()
+#     gpu_info = []
 
-    for i in range(gpu_count):
-        handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-        name = pynvml.nvmlDeviceGetName(handle).decode("utf-8")
-        memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        utilization_info = pynvml.nvmlDeviceGetUtilizationRates(handle)
-        temperature = pynvml.nvmlDeviceGetTemperature(handle, 0)
+#     for i in range(gpu_count):
+#         handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+#         name = pynvml.nvmlDeviceGetName(handle).decode("utf-8")
+#         memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+#         utilization_info = pynvml.nvmlDeviceGetUtilizationRates(handle)
+#         temperature = pynvml.nvmlDeviceGetTemperature(handle, 0)
 
-        gpu_info.append({
-            "index": i,
-            "name": name,
-            "memory_total": memory_info.total / 1024**2,  # Convert to MiB
-            "memory_used": memory_info.used / 1024**2,  # Convert to MiB
-            "memory_free": memory_info.free / 1024**2,  # Convert to MiB
-            "utilization_gpu": utilization_info.gpu,
-            "utilization_memory": utilization_info.memory,
-            "temperature": temperature,  # in Celsius
-        })
+#         gpu_info.append({
+#             "index": i,
+#             "name": name,
+#             "memory_total": memory_info.total / 1024**2,  # Convert to MiB
+#             "memory_used": memory_info.used / 1024**2,  # Convert to MiB
+#             "memory_free": memory_info.free / 1024**2,  # Convert to MiB
+#             "utilization_gpu": utilization_info.gpu,
+#             "utilization_memory": utilization_info.memory,
+#             "temperature": temperature,  # in Celsius
+#         })
 
-    pynvml.nvmlShutdown()
-    return gpu_info
+#     pynvml.nvmlShutdown()
+#     return gpu_info
 
 def publish_sensor_readings():
     rospy.init_node('sensors_node', anonymous=True)

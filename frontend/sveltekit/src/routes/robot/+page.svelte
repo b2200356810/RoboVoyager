@@ -2,17 +2,12 @@
 	import { onMount, onDestroy } from 'svelte';
 	import ROSLIB from 'roslib';
 	import { rosStore } from '$lib/stores/rosStore.js';
-	import * as GMaps from '@googlemaps/js-api-loader';
-
-	const { Loader } = GMaps;
-	let mapElement;
 
 	let ros;
 
 	let terminalTopicListener;
 	let terminalTopicData;
 	let videoTopicListener;
-	let videoTopicData;
 	let sensorsTopicListener;
 	let sensorsTopicData = {
 		cpu: 'N/A',
@@ -37,25 +32,10 @@
 	let showCapture = false;
 	let showVideo = false;
 
-	let videoUrl;
+	let makeService = false;
 
 	onMount(async () => {
-		// videoUrl =
-		// 	'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4';
-		// videoUrl = 'http://localhost:8080';
 		loadNippleJs();
-
-		const loader = new Loader({
-			apiKey: 'AIzaSyCU6uBfjvi2BBu596I8SdGg736LkupkvpY',
-			version: 'weekly'
-		});
-
-		const { Map } = await loader.importLibrary('maps');
-
-		let map = new Map(mapElement, {
-			center: { lat: 39.9334, lng: 32.8597 },
-			zoom: 12
-		});
 
 		const unsubscribe = rosStore.subscribe((value) => {
 			if (value !== null) {
@@ -134,6 +114,11 @@
 	}
 
 	function subscribeToVideoStreamingTopic() {
+		// let canvas = document.getElementById('videoCanvas');
+		// let ctx = canvas.getContext('2d');
+
+		let stream = document.getElementById('video-stream');
+
 		videoTopicListener = new ROSLIB.Topic({
 			ros: ros,
 			name: '/video_streaming_topic',
@@ -142,15 +127,43 @@
 
 		videoTopicListener.subscribe(
 			(message) => {
-				videoTopicData = message.data;
+				stream.src = 'data:image/jpeg;base64,' + message.data;
+				// const img = new Image();
+				// img.onload = function () {
+				// 	// Set canvas dimensions to match the container
+				// 	canvas.width = canvas.parentElement.clientWidth;
+				// 	canvas.height = canvas.parentElement.clientHeight;
+				// 	// Clear the canvas
+				// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+				// 	// Draw image onto canvas
+				// 	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				// };
+				// img.src = 'data:image/jpeg;base64,' + message.data;
 				// console.log(message.data.length / 1000);
-				// console.log(`Size of received image: ${videoTopicData.length / 1024} KB`);
 			},
 			(error) => {
 				console.error(`Error in /terminal_topic subscription: ${error}`);
 				console.log(error);
 			}
 		);
+	}
+
+	function changeVideoStreamSettings(width, height, fps) {
+		const service = new ROSLIB.Service({
+			ros: ros,
+			name: '/video_streaming_change_settings',
+			serviceType: 'video_streaming/SetVideoStreamSettings'
+		});
+
+		const request = new ROSLIB.ServiceRequest({
+			width: width,
+			height: height,
+			fps: fps
+		});
+
+		service.callService(request, (result) => {
+			console.log(`Service call result: ${result.success}, message: ${result.message}`);
+		});
 	}
 
 	function publishToControlsTopic() {
@@ -211,19 +224,19 @@
 			xAxis = force / turnRate;
 			zAxis = force / (turnRate * 2);
 		}
-		// LEFT DOWN
-		if (degree > 210 && degree < 240) {
-			xAxis = -force / turnRate;
-			zAxis = force / (turnRate * 2);
-		}
 		// RIGHT UP
 		if (degree > 30 && degree < 60) {
 			xAxis = force / turnRate;
 			zAxis = -force / (turnRate * 2);
 		}
+		// LEFT DOWN
+		if (degree > 210 && degree < 240) {
+			xAxis = -force / turnRate;
+			zAxis = force / (turnRate * 2);
+		}
 		// RIGHT DOWN
 		if (degree > 300 && degree < 330) {
-			xAxis = -force / turnRate;
+			xAxis = force / turnRate;
 			zAxis = -force / (turnRate * 2);
 		}
 
@@ -276,6 +289,15 @@
 </script>
 
 <div class="robot-container">
+	<button
+		style="height: 50px;"
+		on:click={() => {
+			makeService = !makeService;
+			if (makeService) changeVideoStreamSettings(300, 300, 1);
+			else console.log('HERE');
+		}}>Press me</button
+	>
+
 	<div class="robot-container-header">
 		<nav class="robot-container-header-navbar">
 			<button
@@ -283,13 +305,6 @@
 				on:click={() => {
 					showAI = !showAI;
 				}}>AI</button
-			>
-
-			<button
-				style="color: {showMap ? 'green' : 'red'}"
-				on:click={() => {
-					showMap = !showMap;
-				}}>Map</button
 			>
 
 			<button
@@ -326,12 +341,10 @@
 	</div>
 
 	<div class="robot-container-body">
-		<img
-			class="video-stream"
-			src="data:image/jpeg;base64,{videoTopicData}"
-			alt=""
-			style="display: {showVideo ? 'initial' : 'none'}"
-		/>
+		<!-- <canvas id="videoCanvas" class="video-stream" style="display: {showVideo ? 'initial' : 'none'}"
+		></canvas> -->
+
+		<img id="video-stream" alt="" style="display: {showVideo ? 'initial' : 'none'}" />
 
 		<div class="sensors-grid" style="visibility: {showSensors ? 'visible' : 'hidden'}">
 			<div class="sensor-icon">
@@ -482,9 +495,7 @@
 				<div class="joystick-axis z-axis-neg">-z</div>
 			</div>
 
-			<div class="maps-navigation" style="visibility: {showMap ? 'visible' : 'hidden'}">
-				<div bind:this={mapElement}></div>
-			</div>
+			<div class="maps-navigation" style="visibility: {showMap ? 'visible' : 'hidden'}"></div>
 		</div>
 	</div>
 </div>
@@ -498,36 +509,13 @@
 		user-select: none;
 	}
 
-	/* Version 1 */
-	/* .robot-container-header-navbar {
-		display: grid;
-		grid-template-columns: repeat(6, 1fr);
-		padding: 10px 0px;
-		justify-content: center;
-		gap: 0px;
-		border-bottom: 1px solid var(--text-color);
-		z-index: 1;
-	}
-
-	.robot-container-header-navbar button {
-		background: transparent;
-		color: var(--text-color);
-		border: none;
-		border-left: 1px solid var(--text-color);
-		padding: 5px;
-		font-size: 1.5rem;
-		cursor: pointer;
-	} */
-
 	.robot-container-header-navbar {
 		display: grid;
-		grid-template-columns: repeat(6, 1fr);
+		grid-template-columns: repeat(5, 1fr);
 		padding: 10px 5px 5px 5px;
 		justify-content: center;
 		gap: 0px 5px;
-		/* border-bottom: 1px solid var(--text-color); */
 		z-index: 1;
-		/* flex-wrap: wrap; */
 	}
 
 	.robot-container-header-navbar button {
@@ -553,11 +541,11 @@
 		position: relative;
 	}
 
-	.video-stream {
+	#video-stream {
 		position: absolute;
 		height: 100%;
 		width: 100%;
-		object-fit: contain;
+		object-fit: cover;
 		user-select: none;
 		-webkit-user-drag: none;
 		-moz-user-select: none;
@@ -675,7 +663,7 @@
 	}
 
 	.z-axis-pos {
-		left: 0;
+		left: -2px;
 		top: 50%;
 		transform: translateY(-50%);
 	}
