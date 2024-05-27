@@ -10,7 +10,7 @@ from video_streaming.msg import VideoStreamInfo
 
 start_time = time.time()
 
-target_width, target_height, target_fps = 1000, 500, 60
+target_width, target_height, target_fps = 1500, 300, 30
 new_target_height = target_height
 new_target_width = target_width
 new_target_fps = target_fps
@@ -68,15 +68,16 @@ def streamer():
             stream_info_msg.fps = int(target_fps)
 
             rate = rospy.Rate(target_fps)
-            cap.set(cv2.CAP_PROP_FPS, target_fps)
+            # cap.set(cv2.CAP_PROP_FPS, target_fps)
 
             print(f"New settings: ")
             print(f"Resolution: {target_width}x{target_height} @ {target_fps} FPS")
             
 
         # Cut off the right camera
-        frame = frame[:, :target_width // 2, :]
+        frame = frame[:, target_width // 2:, :]
         # frame = cv2.resize(frame, (target_width, target_height))
+
         frame = image_resize(frame, height = target_height)
 
         _, frame = cv2.imencode('.jpg', frame)

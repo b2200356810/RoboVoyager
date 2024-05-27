@@ -114,10 +114,10 @@
 	}
 
 	function subscribeToVideoStreamingTopic() {
-		// let canvas = document.getElementById('videoCanvas');
-		// let ctx = canvas.getContext('2d');
+		let canvas = document.getElementById('video-stream');
+		let ctx = canvas.getContext('2d');
 
-		let stream = document.getElementById('video-stream');
+		// let imageElement = document.getElementById('video-stream');
 
 		videoTopicListener = new ROSLIB.Topic({
 			ros: ros,
@@ -127,19 +127,13 @@
 
 		videoTopicListener.subscribe(
 			(message) => {
-				stream.src = 'data:image/jpeg;base64,' + message.data;
-				// const img = new Image();
-				// img.onload = function () {
-				// 	// Set canvas dimensions to match the container
-				// 	canvas.width = canvas.parentElement.clientWidth;
-				// 	canvas.height = canvas.parentElement.clientHeight;
-				// 	// Clear the canvas
-				// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-				// 	// Draw image onto canvas
-				// 	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-				// };
-				// img.src = 'data:image/jpeg;base64,' + message.data;
-				// console.log(message.data.length / 1000);
+				const img = new Image();
+				img.onload = function () {
+					// ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				};
+				img.src = 'data:image/jpeg;base64,' + message.data;
+				// imageElement.src = 'data:image/jpeg;base64,' + message.data;
 			},
 			(error) => {
 				console.error(`Error in /terminal_topic subscription: ${error}`);
@@ -236,7 +230,7 @@
 		}
 		// RIGHT DOWN
 		if (degree > 300 && degree < 330) {
-			xAxis = force / turnRate;
+			xAxis = -force / turnRate;
 			zAxis = -force / (turnRate * 2);
 		}
 
@@ -286,18 +280,30 @@
 		if (commandVelocity) commandVelocity.publish(twist);
 		else console.error('Command velocity topic not initialized');
 	}
+
+	function publishDataSaver(command) {
+		var controlTopic = new ROSLIB.Topic({
+			ros: ros,
+			name: '/data_saver_control',
+			messageType: 'std_msgs/String'
+		});
+
+		var message = new ROSLIB.Message({
+			data: command
+		});
+
+		controlTopic.publish(message);
+
+		console.log(command);
+
+		isModalOpen = !isModalOpen;
+		showCapture = !showCapture;
+	}
+
+	let isModalOpen = true;
 </script>
 
 <div class="robot-container">
-	<button
-		style="height: 50px;"
-		on:click={() => {
-			makeService = !makeService;
-			if (makeService) changeVideoStreamSettings(300, 300, 1);
-			else console.log('HERE');
-		}}>Press me</button
-	>
-
 	<div class="robot-container-header">
 		<nav class="robot-container-header-navbar">
 			<button
@@ -326,6 +332,7 @@
 				style="color: {showCapture ? 'green' : 'red'}"
 				on:click={() => {
 					showCapture = !showCapture;
+					isModalOpen = !isModalOpen;
 				}}>Capture</button
 			>
 
@@ -341,10 +348,28 @@
 	</div>
 
 	<div class="robot-container-body">
-		<!-- <canvas id="videoCanvas" class="video-stream" style="display: {showVideo ? 'initial' : 'none'}"
-		></canvas> -->
+		<div class="capture-modal" style="display: {isModalOpen ? 'initial' : 'none'}">
+			<div>
+				<button
+					on:click={() => {
+						publishDataSaver('start');
+					}}>Start</button
+				>
+				<button
+					on:click={() => {
+						publishDataSaver('pause');
+					}}>Pause</button
+				>
+				<button
+					on:click={() => {
+						publishDataSaver('stop');
+					}}>Stop</button
+				>
+			</div>
+		</div>
 
-		<img id="video-stream" alt="" style="display: {showVideo ? 'initial' : 'none'}" />
+		<canvas id="video-stream" style="display: {showVideo ? 'initial' : 'none'}"></canvas>
+		<!-- <img id="video-stream" alt="" style="display: {showVideo ? 'initial' : 'none'}" /> -->
 
 		<div class="sensors-grid" style="visibility: {showSensors ? 'visible' : 'hidden'}">
 			<div class="sensor-icon">
@@ -541,11 +566,46 @@
 		position: relative;
 	}
 
+	.capture-modal {
+		display: block;
+		position: fixed;
+		z-index: 1000;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgba(0, 0, 0, 0.4);
+	}
+
+	.capture-modal div {
+		height: 100%;
+		width: fit-content;
+		margin: auto;
+		background-color: gray;
+		display: grid;
+		gap: 20px;
+		grid-template-columns: 1fr 1fr 1fr;
+		justify-items: center;
+		align-items: center;
+		padding: 20px;
+	}
+
+	.capture-modal div button {
+		color: var(--text-color);
+		border-radius: 5px;
+		border: none;
+		box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+		width: fit-content;
+		padding: 5px;
+		background-color: var(--navbar-background);
+	}
+
 	#video-stream {
 		position: absolute;
 		height: 100%;
 		width: 100%;
-		object-fit: cover;
+		/* object-fit: cover; */
 		user-select: none;
 		-webkit-user-drag: none;
 		-moz-user-select: none;
@@ -560,7 +620,7 @@
 		z-index: 10;
 		list-style: none;
 		padding: 10px;
-		/* background: var(--background-color); */
+		background: var(--background-color);
 		transition: var(--theme-transition-time);
 		/* border: 1px solid var(--text-color); */
 		/* border-top: none; */
@@ -568,6 +628,8 @@
 		grid-template-columns: auto auto auto;
 		gap: 1px 8px;
 		font-size: 1.6rem;
+		margin: 10px;
+		border-radius: 15px;
 	}
 
 	.sensors-grid button {

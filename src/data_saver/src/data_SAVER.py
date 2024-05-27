@@ -15,7 +15,7 @@ from tf.msg import tfMessage
 import open3d as o3d
 from threading import Thread
 from socketserver import ThreadingUnixDatagramServer
-from std_msgs.msg import Bool
+from std_msgs.msg import String
 
 
 # --Initializes
@@ -33,6 +33,10 @@ TF_PATH = None
 TF_FILE = False
 GPS_PATH = None
 GPS_FILE = False
+
+START = False
+PAUSE = False
+STOP = False
 
 # --Time formats
 #timestr = datetime.now().strftime("%Y_%m_%d-%H_%M_%S_%f")[:-3]
@@ -225,7 +229,7 @@ def gps_callback(gps_data):
 
 
 def ros_left_image():
-    rospy.Subscriber("/zed2/zed_node/left/image_rect_color", Image, left_camera_callback)
+    rospy.Subscriber("/zed2/zed_node/left/image_rect_color", Image, left_camera_callback2)
     rospy.spin()
 
 
@@ -323,20 +327,63 @@ def take_input():
         print("**************************************************************")
 
 
-def start_stop_callback(msg, recording_status_pub):
-    if recording_status_pub is not None:
-        recording_status_pub.publish(Bool(msg.data))
+def left_camera_callback2(ros_image):
+    global bridge
+    global LEFT_IMG_PATH
+    if START:
+        try:
+            cv_image = bridge.imgmsg_to_cv2(ros_image)
+        except CvBridgeError as e:
+            print(e)
+        timestr = datetime.now().strftime("%Y_%m_%d-%H_%M_%S_%f")[:-3]
+        # print(timestr)
+
+    header_time = str(ros_image.header.stamp.to_time())
+    file_name = "image-"+header_time+".png"
+
+
+    file_path = os.path.join(LEFT_IMG_PATH, file_name)
+    # print(file_path)
+    # else:
+    #     return
+    # # cv2.imwrite(file_path, cv_image)
+
+
+
+def start_pause_stop_callback(_message):
+    global START
+    if _message.data == "start":
+        START = True
+        dir_count = len(os.listdir(MAIN_PATH))
+        timestr = datetime.now().strftime("%Y_%m_%d")
+        folder_name = str(dir_count+1)+"-"+timestr
+        new = os.path.join(MAIN_PATH, folder_name)
+
+        # Generating data folders' names
+        LEFT_IMG_PATH = os.path.join(new, "left_images")
+        print(new)
+        # print(LEFT_IMG_PATH)
+        print("START")
+        ros_left_image()
+    elif _message.data == "pause":
+        print("PAUSE")
+    elif _message.data == "stop":
+        print("STOP")
 
 
 def main():
-    rospy.init_node("collector_node", anonymous=True)
-    
-    recording_status_pub = rospy.Publisher("/recording_status", Bool, queue_size=1)
-    start_stop_sub = rospy.Subscriber("/start_stop_recording", Bool, 
-                                      lambda msg: start_stop_callback(msg, recording_status_pub),
-                                      queue_size=1)
-
+    rospy.init_node("data_saver_node", anonymous=True)
+    # recording_status_pub = rospy.Publisher("/data_saver_topic", Bool, queue_size=1)
+    rospy.Subscriber("/data_saver_control", String, start_pause_stop_callback)
     rospy.spin()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
+
+
     # t1 = Thread(target=ros_left_image)
     # t2 = Thread(target=ros_right_image)
     # t3 = Thread(target=ros_depth_image)
@@ -363,10 +410,3 @@ def main():
     # t6.join()
     # t7.join()
     # t8.join()
-
-
-if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        pass
