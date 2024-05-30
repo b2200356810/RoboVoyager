@@ -246,13 +246,6 @@
 	}
 
 	@media (min-width: 700px) {
-		:global(body) {
-			margin-top: 0;
-		}
-		nav {
-			position: relative;
-			margin-top: 0;
-		}
 		nav ul,
 		nav ul.active {
 			position: initial;

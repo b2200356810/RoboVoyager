@@ -60,13 +60,15 @@
 		--text-color: #555555;
 		--background-color: #f6f6f6;
 		--theme-transition-time: 0.4s ease-in-out;
-
 		--page-display: initial;
+
+		--section-background: #fef7f2;
 	}
 
 	:global(.dark-theme) {
 		--text-color: #e6e6e6;
 		--background-color: #4e4e4e;
+		--section-background: #454545;
 	}
 
 	:global(body) {
@@ -83,7 +85,12 @@
 		--page-display: none;
 	}
 
+	:global(a) {
+		color: inherit;
+	}
+
 	.container {
+		width: 100%;
 		display: var(--page-display);
 	}
 	@media (min-width: 700px) {

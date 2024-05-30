@@ -24,6 +24,7 @@
 	let commandVelocity;
 	let joystickX = 0;
 	let joystickZ = 0;
+	let speedGain = 0.0;
 
 	let showAI = false;
 	let showMap = true;
@@ -31,6 +32,11 @@
 	let showControls = true;
 	let showCapture = false;
 	let showVideo = false;
+
+	let showCaptureButtons = false;
+	let captureStarted = false;
+	let capturePaused = false;
+	let captureStopped = false;
 
 	let makeService = false;
 
@@ -195,43 +201,41 @@
 		//  Left Right (turning)
 		let zAxis = 0.0;
 		// Speed
-		let force = parseFloat(data.force).toFixed(2);
+		let force = parseFloat(parseFloat(data.force).toFixed(2));
 		// Actual direction (right of circle is 0)
 		let degree = parseFloat(data.angle.degree);
 
 		// Limit the speed
+		force = force / 2;
+		force = force + speedGain;
 		if (force > 1.0) force = 1.0;
 
 		let turnRate = 2;
 
-		// UP
-		if (degree > 60 && degree < 120) xAxis = force;
-		// DOWN
-		if (degree > 240 && degree < 300) xAxis = -force;
-		// LEFT
-		if (degree > 150 && degree < 210) zAxis = force;
-		// RIGHT
-		if ((degree > 0 && degree < 30) || (degree > 330 && degree < 360)) zAxis = -force;
+		if (degree > 60 && degree < 120) xAxis = force; // UP
+		if (degree > 240 && degree < 300) xAxis = -force; // DOWN
+		if (degree > 150 && degree < 210) zAxis = force; // LEFT
+		if ((degree > 0 && degree < 30) || (degree > 330 && degree < 360)) zAxis = -force; // RIGHT
 
 		// LEFT UP
 		if (degree > 120 && degree < 150) {
-			xAxis = force / turnRate;
-			zAxis = force / (turnRate * 2);
+			xAxis = force;
+			zAxis = force / turnRate;
 		}
 		// RIGHT UP
 		if (degree > 30 && degree < 60) {
-			xAxis = force / turnRate;
-			zAxis = -force / (turnRate * 2);
+			xAxis = force;
+			zAxis = -force / turnRate;
 		}
 		// LEFT DOWN
 		if (degree > 210 && degree < 240) {
-			xAxis = -force / turnRate;
-			zAxis = force / (turnRate * 2);
+			xAxis = -force;
+			zAxis = force / turnRate;
 		}
 		// RIGHT DOWN
 		if (degree > 300 && degree < 330) {
-			xAxis = -force / turnRate;
-			zAxis = -force / (turnRate * 2);
+			xAxis = -force;
+			zAxis = -force / turnRate;
 		}
 
 		xAxis = parseFloat(xAxis);
@@ -239,9 +243,6 @@
 
 		joystickX = xAxis.toFixed(2);
 		joystickZ = zAxis.toFixed(2);
-
-		// console.log('X:', xAxis);
-		// console.log('Z:', zAxis);
 
 		const twist = new ROSLIB.Message({
 			linear: {
@@ -281,7 +282,7 @@
 		else console.error('Command velocity topic not initialized');
 	}
 
-	function publishDataSaver(command) {
+	function publishDataSaverStatus(command) {
 		var controlTopic = new ROSLIB.Topic({
 			ros: ros,
 			name: '/data_saver_control',
@@ -293,14 +294,7 @@
 		});
 
 		controlTopic.publish(message);
-
-		console.log(command);
-
-		isModalOpen = !isModalOpen;
-		showCapture = !showCapture;
 	}
-
-	let isModalOpen = true;
 </script>
 
 <div class="robot-container">
@@ -332,7 +326,7 @@
 				style="color: {showCapture ? 'green' : 'red'}"
 				on:click={() => {
 					showCapture = !showCapture;
-					isModalOpen = !isModalOpen;
+					showCaptureButtons = !showCaptureButtons;
 				}}>Capture</button
 			>
 
@@ -348,21 +342,42 @@
 	</div>
 
 	<div class="robot-container-body">
-		<div class="capture-modal" style="display: {isModalOpen ? 'initial' : 'none'}">
+		<div class="data-saver" style="display: {showCaptureButtons ? 'initial' : 'none'}">
 			<div>
+				<button style="visibility: hidden;"></button>
+				<button style="visibility: hidden;"></button>
+
 				<button
+					style="color: {captureStarted ? 'green' : 'red'}"
 					on:click={() => {
-						publishDataSaver('start');
+						if (capturePaused === true || captureStopped === true) {
+							capturePaused = false;
+							captureStopped = false;
+						}
+						captureStarted = true;
+						publishDataSaverStatus('start');
 					}}>Start</button
 				>
 				<button
+					style="color: {capturePaused ? 'green' : 'red'}"
 					on:click={() => {
-						publishDataSaver('pause');
+						if (captureStarted === true || captureStopped === true) {
+							captureStarted = false;
+							captureStopped = false;
+						}
+						capturePaused = true;
+						publishDataSaverStatus('pause');
 					}}>Pause</button
 				>
 				<button
+					style="color: {captureStopped ? 'green' : 'red'}"
 					on:click={() => {
-						publishDataSaver('stop');
+						if (captureStarted === true || capturePaused === true) {
+							captureStarted = false;
+							capturePaused = false;
+						}
+						captureStopped = true;
+						publishDataSaverStatus('stop');
 					}}>Stop</button
 				>
 			</div>
@@ -505,7 +520,7 @@
 		</div>
 
 		<div class="robot-container-body-wrapper">
-			<div class="joystick-speed">
+			<div class="joystick-speed" style="visibility: {showControls ? 'visible' : 'hidden'}">
 				<span class="joystick-label">X:</span>
 				<span class="joystick-value">{joystickX}</span>
 				<span class="joystick-label">Z:</span>
@@ -520,7 +535,20 @@
 				<div class="joystick-axis z-axis-neg">-z</div>
 			</div>
 
-			<div class="maps-navigation" style="visibility: {showMap ? 'visible' : 'hidden'}"></div>
+			<div class="joystick-limit" style="visibility: {showControls ? 'visible' : 'hidden'}">
+				<div>Speed gain {speedGain}</div>
+				<button
+					on:click={() => {
+						speedGain = parseFloat((speedGain + 0.2).toFixed(1));
+					}}>+0.2</button
+				>
+				<button
+					on:click={() => {
+						if (speedGain === 0) return;
+						speedGain = parseFloat((speedGain - 0.2).toFixed(1));
+					}}>-0.2</button
+				>
+			</div>
 		</div>
 	</div>
 </div>
@@ -539,7 +567,7 @@
 		grid-template-columns: repeat(5, 1fr);
 		padding: 10px 5px 5px 5px;
 		justify-content: center;
-		gap: 0px 5px;
+		gap: 10px;
 		z-index: 1;
 	}
 
@@ -566,39 +594,29 @@
 		position: relative;
 	}
 
-	.capture-modal {
-		display: block;
-		position: fixed;
-		z-index: 1000;
-		left: 0;
-		top: 0;
+	.data-saver {
+		position: absolute;
 		width: 100%;
-		height: 100%;
-		overflow: auto;
-		background-color: rgba(0, 0, 0, 0.4);
-	}
-
-	.capture-modal div {
-		height: 100%;
-		width: fit-content;
-		margin: auto;
-		background-color: gray;
-		display: grid;
-		gap: 20px;
-		grid-template-columns: 1fr 1fr 1fr;
-		justify-items: center;
-		align-items: center;
-		padding: 20px;
-	}
-
-	.capture-modal div button {
-		color: var(--text-color);
-		border-radius: 5px;
-		border: none;
-		box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-		width: fit-content;
 		padding: 5px;
-		background-color: var(--navbar-background);
+		/* background-color: rgba(0, 0, 0, 0.4); */
+	}
+
+	.data-saver div {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.data-saver button {
+		background: var(--navbar-background);
+		border: none;
+		padding: 5px;
+		font-size: 1.5rem;
+		cursor: pointer;
+		border-radius: 10px;
+		box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+		color: var(--text-color);
 	}
 
 	#video-stream {
@@ -632,10 +650,6 @@
 		border-radius: 15px;
 	}
 
-	.sensors-grid button {
-		/* position: absolute; */
-	}
-
 	.sensor-icon {
 		width: 15px;
 		height: 15px;
@@ -643,14 +657,12 @@
 
 	.robot-container-body-wrapper {
 		display: flex;
-		/* height: 120px; */
 		justify-content: space-between;
 		padding: 30px 10px;
 		gap: 20px;
 	}
 
 	.robot-container-body-wrapper div {
-		text-align: center;
 		width: 100px;
 		height: 100px;
 	}
@@ -703,7 +715,7 @@
 			transparent 360deg
 		);
 
-		mask: radial-gradient(circle, transparent 45px, var(--text-color) 70%);
+		mask: radial-gradient(circle, transparent 40px, var(--text-color) 70%);
 	}
 
 	#joystick-container .joystick-axis {
@@ -713,19 +725,19 @@
 	}
 
 	.x-axis-pos {
-		top: -3px;
+		top: -2px;
 		left: 50%;
 		transform: translateX(-50%);
 	}
 
 	.x-axis-neg {
-		bottom: -3px;
+		bottom: -2px;
 		left: 50%;
 		transform: translateX(-50%);
 	}
 
 	.z-axis-pos {
-		left: -2px;
+		left: 3px;
 		top: 50%;
 		transform: translateY(-50%);
 	}
@@ -736,7 +748,57 @@
 		transform: translateY(-50%);
 	}
 
-	.maps-navigation div {
-		border: 1px solid black;
+	.joystick-limit {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-auto-flow: row;
+		grid-template-areas:
+			'Limit Limit'
+			'Increase Decrease';
+		gap: 5px;
+		align-content: center;
+		justify-items: center;
+		border-radius: 10px;
+		text-align: center;
+	}
+
+	.joystick-limit div {
+		grid-area: Limit;
+		height: fit-content;
+	}
+
+	.joystick-limit button {
+		background: var(--navbar-background);
+		border: none;
+		padding: 5px;
+		font-size: 1.5rem;
+		cursor: pointer;
+		border-radius: 10px;
+		box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+		color: var(--text-color);
+	}
+
+	.joystick-limit button:nth-child(1) {
+		grid-area: Increase;
+	}
+
+	.joystick-limit button:nth-child(2) {
+		grid-area: Decrease;
+	}
+	@media (min-width: 1000px) {
+		.robot-container-header-navbar,
+		.data-saver div {
+			grid-template-columns: repeat(5, 150px);
+			padding: 10px 20px;
+			gap: 20px;
+		}
+
+		.data-saver div {
+			padding: 0 10px 0 10px;
+		}
+
+		.robot-container-body-wrapper {
+			justify-content: space-around;
+		}
 	}
 </style>

@@ -22,8 +22,9 @@
 	<section class="how-it-works">
 		<h2>How it Works</h2>
 		<p>
-			Make sure the connection is established by connecting to the robot's IP from your phone or
-			computer. In the Robot page, you can toggle features on or off by clicking on their buttons
+			Make sure the connection is established by connecting to the robot's network and IP from your
+			phone or computer. In the Robot page, you can toggle features on or off by clicking on their
+			buttons
 		</p>
 	</section>
 
@@ -34,11 +35,13 @@
 			<h3>Controls</h3>
 			<p>
 				A Virtual Joystick is provided to remotely control the robot. It sends a vector of movement
-				to the robot by publishing it to the <code>/cmd_vel </code>(command velocity) topic. There
-				are 8 possible directions, including moving diagonally. RoboVoyager is a differential robot,
-				so one wheel's speed is "differentiated" from the other and that's how it can rotate and
-				move in a curvy line
+				to the robot by publishing it to the <code>/cmd_vel</code> (command velocity) topic. There
+				are 8 possible directions, including moving diagonally. RoboVoyager is a
+				<a href="https://medium.com/manual-robotics/drives-76c2b2dac97c">differential</a> robot, so one
+				wheel's speed is "differentiated" from the other and that's how it can rotate around and move
+				in a curvy line
 			</p>
+			<img src="images/differential_drive.png" alt="" />
 			<div>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
 					><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
@@ -57,13 +60,14 @@
 				>
 			</div>
 		</div>
+
 		<div class="feature">
 			<h3>Video Streaming</h3>
 			<p>
-				When remotely controling a robot over a distance, a video stream is essential. Video
-				streaming is offered at a low resolution for faster viewing speed. Raw camera footage is
-				first resized and then converted into JPGs. Robot only consumes data after a user subscribes
-				to the <code>/video_streaming</code> topic
+				When a user is remotely controling a robot over a distance, a video stream is essential.
+				Video streaming is offered at a low resolution for faster viewing speed. Raw camera footage
+				is first resized and then converted into JPGs. Robot's computer only sends data after a user
+				subscribes to the <code>/video_streaming</code> topic
 			</p>
 			<div>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
@@ -74,9 +78,13 @@
 				</svg>
 			</div>
 		</div>
+
 		<div class="feature">
 			<h3>Sensors</h3>
-			<p>Monitor sensor data from the robot</p>
+			<p>
+				Monitor sensor data from the robot. The most useful ones are battery levels and upload rate
+				during video streaming
+			</p>
 			<div>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
 					<path
@@ -88,41 +96,14 @@
 				</svg>
 			</div>
 		</div>
-		<div class="feature">
-			<h3>Map with GPS</h3>
-			<p>The Map works even offline. Full screen for a better view</p>
-			<div>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-					><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
-						id="SVGRepo_tracerCarrier"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					></g><g id="SVGRepo_iconCarrier">
-						<path
-							d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-							stroke="currentColor"
-							stroke-width="1.5"
-						></path>
-						<path
-							d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
-							stroke="currentColor"
-							stroke-width="1.5"
-						></path>
-						<path d="M2 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-						></path>
-						<path d="M20 12L22 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-						></path>
-						<path d="M12 4V2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-						></path>
-						<path d="M12 22V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-						></path>
-					</g></svg
-				>
-			</div>
-		</div>
+
 		<div class="feature">
 			<h3>Data Saving</h3>
-			<p>Save and analyze collected data for later</p>
+			<p>
+				Save and analyze collected data for later. Data saver node collects information from Lidar,
+				GPS, and Zed2 camera (but the camera has many more sensors built inside it). Be cautious of
+				prolonged use, as 10 seconds fills up around 100 MBs
+			</p>
 			<div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -149,36 +130,37 @@
 				<a href="https://tuanacetinkaya.github.io/Moborobot/" class="cta-button">Moborobot</a>
 			</h3>
 			<p>
-				This project was about making the robot go from point A to point B using Simultaneous
+				This project was about making the robot go from point A to point B, by using Simultaneous
 				Localization and Mapping (SLAM) and object avoidance algorithm
+			</p>
+		</div>
+
+		<div class="project">
+			<h3>
+				<a href="https://github.com/MAli7319/Moborobo_GMapping" class="cta-button"
+					>Moborobo GMapping</a
+				>
+			</h3>
+			<p>
+				This project is an upgraded version of Moborobot. Navigating from point A to point B now
+				works without mapping prior area, but tiles of an offline map are still necessary as a
+				general overview of the area, and designating destinations
 			</p>
 		</div>
 	</section>
 
-	<footer>
-		<!-- <nav>
-			<ul>
-				<li><a href="about.html">About Us</a></li>
-				<li><a href="contact.html">Contact</a></li>
-				<li><a href="privacy.html">Privacy Policy</a></li>
-			</ul>
-		</nav> -->
-	</footer>
+	<footer></footer>
 </div>
 
 <style>
 	:root {
 		--line-color: rgba(0, 0, 0, 0.3);
 		--line-travel: rgba(0, 0, 0, 0);
-		--section-background: #fef7f2;
-		--hero-background: #fef7f2;
 	}
 
 	:global(.dark-theme) {
 		--line-color: rgba(255, 255, 255, 0.2);
 		--line-travel: rgba(255, 255, 255, 0);
-		--section-background: #454545;
-		--hero-background: #454545;
 	}
 
 	.hero {
@@ -190,14 +172,9 @@
 		position: relative;
 		color: var(--text-color);
 		font-size: 2.2rem;
-		background-color: var(--hero-background);
+		background-color: var(--section-background);
 		box-shadow: 0px 5px 15px 2px rgba(0, 0, 0, 0.3);
 		margin-bottom: 40px;
-	}
-
-	.hero h1,
-	.hero p {
-		z-index: 10;
 	}
 
 	.lines {
@@ -207,15 +184,13 @@
 		right: 0;
 		height: 100%;
 		margin: auto;
-
 		/* width: 90vw; */
 	}
 	.line {
 		position: absolute;
-		width: 2px;
 		height: 100%;
+		width: 2px;
 		top: 0;
-		left: 50%;
 		background: var(--line-color);
 		overflow: hidden;
 	}
@@ -234,7 +209,7 @@
 			var(--line-color) 100%
 		);
 
-		animation: drop 7s 0s infinite;
+		animation: drop 8s 0s infinite;
 		animation-fill-mode: forwards;
 		animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
 	}
@@ -263,15 +238,14 @@
 	}
 
 	section:not(:first-child) {
-		padding: 15px;
-		/* border-top: 2px solid var(--text-color); */
-		border: 1px solid var(--text-color);
-		border-radius: 15px;
-		margin: 20px 10px;
-		box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.3);
-		background-color: var(--section-background);
 		display: grid;
 		gap: 10px;
+		padding: 20px;
+		margin: 20px 10px;
+		background-color: var(--section-background);
+		border: 1px solid var(--text-color);
+		border-radius: 15px;
+		box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.3);
 	}
 
 	.features {
@@ -286,7 +260,8 @@
 		grid-auto-flow: row;
 		grid-template-areas:
 			'SVG Title'
-			'Text Text';
+			'Text Text'
+			'IMG IMG';
 	}
 
 	.feature h3 {
@@ -306,28 +281,51 @@
 		align-items: center;
 	}
 
-	@media (min-width: 600px) {
-		.hero {
-			font-size: 3rem;
-		}
+	.feature img {
+		grid-area: IMG;
+		width: 100%;
+		border: 1px solid var(--text-color);
 	}
-	@media (min-width: 800px) {
+
+	.feature code {
+		padding: 1px;
+		background-color: var(--text-color);
+		color: var(--section-background);
+		opacity: 0.5;
+		border-radius: 4px;
+		font-size: 1.4rem;
+	}
+
+	.project {
+		display: grid;
+		gap: 5px;
+	}
+
+	@media (min-width: 700px) {
+		.home-container {
+			font-size: 2rem;
+		}
 		.hero {
 			font-size: 4rem;
 		}
 
 		section:not(:first-child) {
-			font-size: 2.5rem;
-			padding: 100px;
-		}
-
-		.features {
-			gap: 40px;
+			padding: 20px;
+			margin: 20px;
 		}
 
 		.feature {
-			grid-template-columns: 80px 1fr;
-			gap: 20px 20px;
+			grid-template-columns: 60px 1fr;
+			gap: 10px 20px;
+		}
+
+		.feature code {
+			font-size: 1.7rem;
+		}
+
+		.feature img {
+			max-width: 900px;
+			margin: 20px auto;
 		}
 	}
 </style>
