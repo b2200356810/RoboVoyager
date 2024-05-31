@@ -12,7 +12,7 @@ from sensor_msgs.msg import Image, PointCloud2, PointField, Imu
 import sensor_msgs.point_cloud2 as pc2
 from nmea_msgs.msg import Sentence
 from tf.msg import tfMessage
-# import open3d as o3d
+import open3d as o3d
 from threading import Thread
 from socketserver import ThreadingUnixDatagramServer
 from std_msgs.msg import String
@@ -22,8 +22,8 @@ bridge = CvBridge()
 SAVE = False
 FINISH = False
 RECORDING_STARTED = False
-MAIN_PATH = "/home/emir/recording_tests"
-# MAIN_PATH = "/media/moborobot/orin_xtrnl/robovoyager_saved_data"
+# MAIN_PATH = "/home/emir/recording_tests"
+MAIN_PATH = "/media/moborobot/orin_xtrnl/robovoyager_saved_data"
 LEFT_IMG_PATH = None
 RIGHT_IMG_PATH = None
 DEPTH_PATH = None

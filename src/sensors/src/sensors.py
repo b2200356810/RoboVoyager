@@ -8,6 +8,8 @@ import os
 import json
 # import pynvml
 
+battery_level = None
+
 def get_kernel_info():
     return {
         "kernel_version": os.uname().release,
@@ -97,9 +99,17 @@ def get_network_usage():
 #     pynvml.nvmlShutdown()
 #     return gpu_info
 
+def get_battery_level(_message):
+    global battery_level
+    battery_level = _message.data.split(" ")[-1][:-1]
+
 def publish_sensor_readings():
+    global battery_level
+
     rospy.init_node('sensors_node', anonymous=True)
     pub = rospy.Publisher('/sensors_topic', String, queue_size = 10)
+    rospy.Subscriber("/battery_level", String, get_battery_level)
+
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
@@ -107,7 +117,7 @@ def publish_sensor_readings():
         data = {
             "kernel_info": get_kernel_info(),
             "cpu_info": get_cpu_info(),
-            # "gpu_info": get_gpu_info(),
+            "battery_level": battery_level,
             "memory_info": get_memory_info(),
             "disk_info": get_disk_info(),
             "internet_speed": get_network_usage(),

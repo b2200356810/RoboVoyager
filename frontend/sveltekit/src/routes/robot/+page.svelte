@@ -106,6 +106,7 @@
 
 				sensorsTopicData.cpu = sensorData.cpu_info.total_cpu_usage + ' %';
 				sensorsTopicData.ram = sensorData.memory_info.memory_percentage + ' %';
+				sensorsTopicData.battery = sensorData.battery_level + ' %';
 				sensorsTopicData.disk = sensorData.disk_info.usage_percentage + ' %';
 				sensorsTopicData.network_sent =
 					sensorData.internet_speed.megabytes_sent_per_second + ' MB/s';
@@ -722,6 +723,7 @@
 		position: absolute;
 		height: fit-content;
 		width: fit-content;
+		font-size: 1.5rem;
 	}
 
 	.x-axis-pos {
@@ -737,7 +739,7 @@
 	}
 
 	.z-axis-pos {
-		left: 3px;
+		left: 0px;
 		top: 50%;
 		transform: translateY(-50%);
 	}
