@@ -12,17 +12,18 @@ from sensor_msgs.msg import Image, PointCloud2, PointField, Imu
 import sensor_msgs.point_cloud2 as pc2
 from nmea_msgs.msg import Sentence
 from tf.msg import tfMessage
-import open3d as o3d
+# import open3d as o3d
 from threading import Thread
 from socketserver import ThreadingUnixDatagramServer
 from std_msgs.msg import String
 
 
-# --Initializes
 bridge = CvBridge()
 SAVE = False
 FINISH = False
-MAIN_PATH = "/media/moborobot/orin_xtrnl/robovoyager_saved_data"
+RECORDING_STARTED = False
+MAIN_PATH = "/home/emir/recording_tests"
+# MAIN_PATH = "/media/moborobot/orin_xtrnl/robovoyager_saved_data"
 LEFT_IMG_PATH = None
 RIGHT_IMG_PATH = None
 DEPTH_PATH = None
@@ -34,16 +35,7 @@ TF_FILE = False
 GPS_PATH = None
 GPS_FILE = False
 
-START = False
-PAUSE = False
-STOP = False
 
-# --Time formats
-#timestr = datetime.now().strftime("%Y_%m_%d-%H_%M_%S_%f")[:-3]
-#timestr = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-
-
-#### CALLBACK FUNCTIONS ####
 def left_camera_callback(ros_image):
     global bridge
     global LEFT_IMG_PATH
@@ -67,7 +59,6 @@ def left_camera_callback(ros_image):
         return
     cv2.imwrite(file_path, cv_image)
 
-
 def right_camera_callback(ros_image):
     global bridge
     global RIGHT_IMG_PATH
@@ -88,7 +79,6 @@ def right_camera_callback(ros_image):
     else:
         return
     cv2.imwrite(file_path, cv_image)
-
 
 def depth_callback(depth_image):
     global bridge
@@ -117,7 +107,6 @@ def depth_callback(depth_image):
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(
         cv_image, alpha=255/depth_array.max()), cv2.COLORMAP_BONE)
     cv2.imwrite(file_path, depth_colormap)
-
 
 def lidar_callback(ros_cloud):
     if not SAVE:
@@ -152,7 +141,6 @@ def lidar_callback(ros_cloud):
         return
     o3d.io.write_point_cloud(file_path, open3d_cloud)
 
-
 def imu_callback(imu_data):
     global IMU_PATH
     global IMU_FILE
@@ -176,7 +164,6 @@ def imu_callback(imu_data):
         txt_file.close()
     else:
         return
-
 
 def tf_callback(tf_data):
     global TF_PATH
@@ -229,77 +216,57 @@ def gps_callback(gps_data):
 
 
 def ros_left_image():
-    rospy.Subscriber("/zed2/zed_node/left/image_rect_color", Image, left_camera_callback2)
+    rospy.Subscriber("/zed2/zed_node/left/image_rect_color", Image, left_camera_callback)
     rospy.spin()
-
 
 def ros_right_image():
     rospy.Subscriber("/zed2/zed_node/right/image_rect_color", Image, right_camera_callback)
     rospy.spin()
 
-
 def ros_depth_image():
     rospy.Subscriber("/zed2/zed_node/depth/depth_registered", Image, depth_callback)
     rospy.spin()
-
 
 def ros_lidar():
     rospy.Subscriber("/rslidar_points", PointCloud2, lidar_callback)
     rospy.spin()
 
-
 def ros_imu():
     rospy.Subscriber("/zed2/zed_node/imu/data", Imu, imu_callback)
     rospy.spin()
 
-
 def ros_tf():
     rospy.Subscriber("/tf", tfMessage, tf_callback)
     rospy.spin()
-
 
 def ros_gps():
     gps_sub = rospy.Subscriber("/gps", Sentence, gps_callback)
     rospy.spin()
 
 
+def take_input(_message):
+    global SAVE, FINISH, RECORDING_STARTED
+    global LEFT_IMG_PATH, RIGHT_IMG_PATH, DEPTH_PATH, PCD_PATH
+    global IMU_PATH, IMU_FILE, TF_PATH, TF_FILE, GPS_PATH, GPS_FILE
 
-def take_input():
-    global SAVE
-    global FINISH
-    global MAIN_PATH
-    global LEFT_IMG_PATH
-    global RIGHT_IMG_PATH
-    global DEPTH_PATH
-    global PCD_PATH
-    global IMU_PATH
-    global IMU_FILE
-    global TF_PATH
-    global TF_FILE
-    global GPS_PATH
-    global GPS_FILE
-    while not FINISH:
-        my_input = input(
-            "\t'r' to (re)start recording (or create a new folder)\n\t'p' to pause recording\n\t'f' to finish record\nInput -->> ")
-        if my_input.lower() == 'r':
-            # Folder count in main folder
+    my_input = _message.data
+
+    if my_input == 'start':
+        if not RECORDING_STARTED: 
             dir_count = len(os.listdir(MAIN_PATH))
-            timestr = datetime.now().strftime("%Y_%m_%d")  # Take current time
-            # Generate new folder's name
-            folder_name = str(dir_count+1)+"-"+timestr
-            new = os.path.join(MAIN_PATH, folder_name)
-            os.mkdir(new)
+            timestr = datetime.now().strftime("%Y_%m_%d")
+            folder_name = str(dir_count + 1) + "-" + timestr
+            CURRENT_FOLDER = os.path.join(MAIN_PATH, folder_name)
+            os.mkdir(CURRENT_FOLDER)
 
-            # Generating data folders' names
-            LEFT_IMG_PATH = os.path.join(new, "left_images")
-            RIGHT_IMG_PATH = os.path.join(new, "right_images")
-            DEPTH_PATH = os.path.join(new, "depth")
-            PCD_PATH = os.path.join(new, "pcd")
-            IMU_PATH = os.path.join(new, "imu")
-            TF_PATH = os.path.join(new, "tf")
-            GPS_PATH = os.path.join(new, "gps")
+            LEFT_IMG_PATH = os.path.join(CURRENT_FOLDER, "left_images")
+            RIGHT_IMG_PATH = os.path.join(CURRENT_FOLDER, "right_images")
+            DEPTH_PATH = os.path.join(CURRENT_FOLDER, "depth")
+            PCD_PATH = os.path.join(CURRENT_FOLDER, "pcd")
+            IMU_PATH = os.path.join(CURRENT_FOLDER, "imu")
+            TF_PATH = os.path.join(CURRENT_FOLDER, "tf")
+            GPS_PATH = os.path.join(CURRENT_FOLDER, "gps")
 
-            # Creating data folders
             os.mkdir(LEFT_IMG_PATH)
             os.mkdir(RIGHT_IMG_PATH)
             os.mkdir(DEPTH_PATH)
@@ -307,74 +274,60 @@ def take_input():
             os.mkdir(IMU_PATH)
             os.mkdir(TF_PATH)
             os.mkdir(GPS_PATH)
-            print("Recording is started.")
-            SAVE = True  # Convert SAVE param to true to start recording
-            IMU_FILE = False
-            TF_FILE = False
-            GPS_FILE = False
-        elif my_input.lower() == 'p':
-            print("Recording is stopped.")
-            SAVE = False  # Convert SAVE param to false to pause recording
-        elif my_input.lower() == 'f':
-            SAVE = False
-            FINISH = True
-            print("Closing...")
-            rospy.signal_shutdown("Closing")
-            cv2.destroyAllWindows()
-            sys.exit(1)
+
+            RECORDING_STARTED = True
+            print("Recording has started")
+        
+        SAVE = True
+        IMU_FILE = False
+        TF_FILE = False
+        GPS_FILE = False
+
+    elif my_input == 'pause':
+        if SAVE:
+            print("Recording is paused")
+            SAVE = False 
         else:
-            print("Press a valid button.")
-        print("**************************************************************")
+            print("Recording is already paused")
 
-
-def left_camera_callback2(ros_image):
-    global bridge
-    global LEFT_IMG_PATH
-    if START:
-        try:
-            cv_image = bridge.imgmsg_to_cv2(ros_image)
-        except CvBridgeError as e:
-            print(e)
-        timestr = datetime.now().strftime("%Y_%m_%d-%H_%M_%S_%f")[:-3]
-        # print(timestr)
-
-    header_time = str(ros_image.header.stamp.to_time())
-    file_name = "image-"+header_time+".png"
-
-
-    file_path = os.path.join(LEFT_IMG_PATH, file_name)
-    # print(file_path)
-    # else:
-    #     return
-    # # cv2.imwrite(file_path, cv_image)
-
-
-
-def start_pause_stop_callback(_message):
-    global START
-    if _message.data == "start":
-        START = True
-        dir_count = len(os.listdir(MAIN_PATH))
-        timestr = datetime.now().strftime("%Y_%m_%d")
-        folder_name = str(dir_count+1)+"-"+timestr
-        new = os.path.join(MAIN_PATH, folder_name)
-
-        # Generating data folders' names
-        LEFT_IMG_PATH = os.path.join(new, "left_images")
-        print(new)
-        # print(LEFT_IMG_PATH)
-        print("START")
-        ros_left_image()
-    elif _message.data == "pause":
-        print("PAUSE")
-    elif _message.data == "stop":
-        print("STOP")
+    elif my_input == 'stop':
+        SAVE = False
+        FINISH = True
+        RECORDING_STARTED = False
+        print("Recording saved")
 
 
 def main():
     rospy.init_node("data_saver_node", anonymous=True)
-    # recording_status_pub = rospy.Publisher("/data_saver_topic", Bool, queue_size=1)
-    rospy.Subscriber("/data_saver_control", String, start_pause_stop_callback)
+    rospy.Subscriber("/data_saver_control", String, take_input)
+    
+    t1 = Thread(target=ros_left_image)
+    t2 = Thread(target=ros_right_image)
+    t3 = Thread(target=ros_depth_image)
+    t4 = Thread(target=ros_lidar)
+    t5 = Thread(target=ros_imu)
+    t6 = Thread(target=ros_tf)
+    t7 = Thread(target=take_input)
+    t8 = Thread(target=ros_gps)
+
+    t1.start()
+    t2.start()
+    t3.start()
+    t4.start()
+    t5.start()
+    t6.start()
+    t7.start()
+    t8.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
+    t4.join()
+    t5.join()
+    t6.join()
+    t7.join()
+    t8.join()
+
     rospy.spin()
 
 if __name__ == '__main__':
@@ -382,31 +335,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-
-
-    # t1 = Thread(target=ros_left_image)
-    # t2 = Thread(target=ros_right_image)
-    # t3 = Thread(target=ros_depth_image)
-    # t4 = Thread(target=ros_lidar)
-    # t5 = Thread(target=ros_imu)
-    # t6 = Thread(target=ros_tf)
-    # t7 = Thread(target=take_input)
-    # t8 = Thread(target=ros_gps)
-
-    # t1.start()
-    # t2.start()
-    # t3.start()
-    # t4.start()
-    # t5.start()
-    # t6.start()
-    # t7.start()
-    # t8.start()
-
-    # t1.join()
-    # t2.join()
-    # t3.join()
-    # t4.join()
-    # t5.join()
-    # t6.join()
-    # t7.join()
-    # t8.join()

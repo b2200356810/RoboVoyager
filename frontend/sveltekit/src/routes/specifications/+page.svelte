@@ -88,12 +88,12 @@
 
 		<div class="description">
 			<p>
-				RoboVoyager is a differential robot. It has 2 differential wheels robot and 4 smaller
-				supporting wheels that aren't operable, a base, and a stand part. The base contains a
-				battery and motors inside it, while the stand has a camera and lidar mounted on top. It also
-				has a power button, emergency and LED buttons, of which 2 are disabled, and the red one
-				powers the motors when pressed in. Emergency button is portruded out and if the robot
-				collides from the front, it will disable the motor functions
+				RoboVoyager is a differential robot. It has 2 differential wheels and 4 smaller supporting
+				wheels that aren't operable, a base, and a stand part. The base contains a battery and
+				motors inside it, while the stand has a camera and lidar mounted on top. It also has a power
+				button, emergency and LED buttons, of which 2 are disabled, and the red one powers the
+				motors when pressed in. Emergency button is portruded out and if the robot collides from the
+				front, it will disable the motor functions
 			</p>
 		</div>
 
@@ -541,7 +541,7 @@
 		}
 
 		.images img {
-			max-width: 500px;
+			max-width: 400px;
 		}
 	}
 </style>
