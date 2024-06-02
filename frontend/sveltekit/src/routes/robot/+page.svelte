@@ -343,49 +343,56 @@
 	</div>
 
 	<div class="robot-container-body">
-		<div class="data-saver" style="display: {showCaptureButtons ? 'initial' : 'none'}">
-			<div>
-				<button style="visibility: hidden;"></button>
-				<button style="visibility: hidden;"></button>
-
-				<button
-					style="color: {captureStarted ? 'green' : 'red'}"
-					on:click={() => {
-						if (capturePaused === true || captureStopped === true) {
-							capturePaused = false;
-							captureStopped = false;
-						}
-						captureStarted = true;
-						publishDataSaverStatus('start');
-					}}>Start</button
-				>
-				<button
-					style="color: {capturePaused ? 'green' : 'red'}"
-					on:click={() => {
-						if (captureStarted === true || captureStopped === true) {
-							captureStarted = false;
-							captureStopped = false;
-						}
-						capturePaused = true;
-						publishDataSaverStatus('pause');
-					}}>Pause</button
-				>
-				<button
-					style="color: {captureStopped ? 'green' : 'red'}"
-					on:click={() => {
-						if (captureStarted === true || capturePaused === true) {
-							captureStarted = false;
-							capturePaused = false;
-						}
-						captureStopped = true;
-						publishDataSaverStatus('stop');
-					}}>Stop</button
-				>
-			</div>
-		</div>
-
 		<canvas id="video-stream" style="display: {showVideo ? 'initial' : 'none'}"></canvas>
 		<!-- <img id="video-stream" alt="" style="display: {showVideo ? 'initial' : 'none'}" /> -->
+
+		<div class="data-saver" style="display: {showCaptureButtons ? 'grid' : 'none'}">
+			<button style="visibility: hidden;"></button>
+			<button style="visibility: hidden;"></button>
+
+			<button
+				style="color: {captureStarted ? 'green' : 'red'}"
+				on:click={() => {
+					if (capturePaused === true || captureStopped === true) {
+						capturePaused = false;
+						captureStopped = false;
+					}
+					captureStarted = true;
+					publishDataSaverStatus('start');
+				}}>Start</button
+			>
+			<button
+				style="color: {capturePaused ? 'green' : 'red'}"
+				on:click={() => {
+					if (captureStarted === true || captureStopped === true) {
+						captureStarted = false;
+						captureStopped = false;
+					}
+					capturePaused = true;
+					publishDataSaverStatus('pause');
+				}}>Pause</button
+			>
+			<button
+				style="color: {captureStopped ? 'green' : 'red'}"
+				on:click={() => {
+					if (captureStarted === true || capturePaused === true) {
+						captureStarted = false;
+						capturePaused = false;
+					}
+					captureStopped = true;
+					publishDataSaverStatus('stop');
+				}}>Stop</button
+			>
+		</div>
+
+		<div class="data-saver" style="display: {showAI ? 'grid' : 'none'}">
+			<button style="visibility: hidden;"></button>
+			<button style="visibility: hidden;"></button>
+
+			<button>AI1</button>
+			<button>AI2</button>
+			<button>AI3</button>
+		</div>
 
 		<div class="sensors-grid" style="visibility: {showSensors ? 'visible' : 'hidden'}">
 			<div class="sensor-icon">
@@ -589,24 +596,18 @@
 
 	.robot-container-body {
 		height: 100%;
-		display: flex;
+		/* display: flex; */
 		flex-direction: column;
 		justify-content: space-between;
 		position: relative;
 	}
 
 	.data-saver {
-		position: absolute;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 10px;
 		width: 100%;
 		padding: 5px;
-		/* background-color: rgba(0, 0, 0, 0.4); */
-	}
-
-	.data-saver div {
-		display: grid;
-		grid-template-columns: repeat(5, 1fr);
 		justify-content: center;
-		gap: 10px;
 	}
 
 	.data-saver button {
@@ -624,7 +625,7 @@
 		position: absolute;
 		height: 100%;
 		width: 100%;
-		/* object-fit: cover; */
+		object-fit: contain;
 		user-select: none;
 		-webkit-user-drag: none;
 		-moz-user-select: none;
@@ -657,6 +658,10 @@
 	}
 
 	.robot-container-body-wrapper {
+		position: absolute;
+		width: 100%;
+		margin: auto;
+		bottom: 0;
 		display: flex;
 		justify-content: space-between;
 		padding: 30px 10px;
@@ -789,18 +794,17 @@
 	}
 	@media (min-width: 1000px) {
 		.robot-container-header-navbar,
-		.data-saver div {
+		.data-saver {
 			grid-template-columns: repeat(5, 150px);
-			padding: 10px 20px;
 			gap: 20px;
-		}
-
-		.data-saver div {
-			padding: 0 10px 0 10px;
 		}
 
 		.robot-container-body-wrapper {
 			justify-content: space-around;
+		}
+
+		.sensors-grid {
+			margin-left: 15%;
 		}
 	}
 </style>

@@ -10,7 +10,8 @@ from video_streaming.msg import VideoStreamInfo
 
 start_time = time.time()
 
-target_width, target_height, target_fps = 1500, 300, 30
+target_width, target_height, target_fps = 1344, 100, 30
+# target_width, target_height, target_fps = 2560, 720, 30
 new_target_height = target_height
 new_target_width = target_width
 new_target_fps = target_fps
