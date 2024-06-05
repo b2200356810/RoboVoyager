@@ -128,12 +128,13 @@
 
 		videoTopicListener = new ROSLIB.Topic({
 			ros: ros,
-			name: '/video_streaming_topic',
+			name: '/ai_topic',
 			messageType: 'sensor_msgs/CompressedImage'
 		});
 
 		videoTopicListener.subscribe(
 			(message) => {
+				// console.log(message.data);
 				const img = new Image();
 				img.onload = function () {
 					// ctx.clearRect(0, 0, canvas.width, canvas.height);
