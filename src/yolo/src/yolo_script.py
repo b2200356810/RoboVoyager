@@ -4,19 +4,21 @@ import sys
 import time
 import cv2
 import rospy
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, Image
 import numpy as np
 # import ultralytics
 from ultralytics import YOLO
 # from IPython.display import display, Image
-import base64
+from cv_bridge import CvBridge, CvBridgeError
 
+# model = YOLO("/home/moborobot/RoboVoyager/src/yolo/best.pt")
 model = YOLO("yolov8n.pt")
+bridge = CvBridge()
 
 def predict(img):
     #img = increase_brightness(img)
     img_resized = cv2.resize(img, (640, 320))
-    results = model.predict(img_resized, save=False, imgsz=320, conf=0.3)
+    results = model.predict(img, save=False, imgsz=320, conf=0.3)
     for result in results:
         boxes = result.boxes.xyxy  # xyxy format: x1, y1, x2, y2
         class_ids = result.boxes.cls  # Get the class IDs
@@ -31,25 +33,26 @@ def predict(img):
             # print(f"Box: {box} - Label: {label}")
     return img
 
-def detect(compressed_image_msg):
-    np_arr = np.frombuffer(compressed_image_msg.data, np.uint8)
-    image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-    predicted_image = predict(image)
-    
-    # Convert image to base64
+def detect(ros_image):
+    current_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding='bgr8')
+    predicted_image = predict(current_image)
+
+    # height, width = current_image.shape[:2]
+    # print(f"Image: Width: {width}, Height: {height}")
+
+    # cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
+    # cv2.resizeWindow("Resized_Window", 960, 540) 
+    # cv2.imshow("Resized_Window", predicted_image)
+    # cv2.waitKey(1)
+
     _, buffer = cv2.imencode('.jpg', predicted_image)
-    # jpg_as_text = base64.b64encode(buffer).decode('utf-8')
-    
-    pub = rospy.Publisher('/ai_topic', CompressedImage, queue_size=10)
+    pub = rospy.Publisher('/ai_streaming_topic', CompressedImage, queue_size=10)
     msg = CompressedImage()
     msg.header.stamp = rospy.Time.now()
     msg.format = "jpeg"
     msg.data = buffer.tobytes()
     pub.publish(msg)
-    # cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-    # cv2.resizeWindow("Resized_Window", 960, 540) 
-    # cv2.imshow("Resized_Window", predicted_image)
-    # cv2.waitKey(1)
+   
 
 def adjust_brightness(image, brightness_factor):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -62,7 +65,7 @@ def adjust_brightness(image, brightness_factor):
 
 def object_detection():
     rospy.init_node('yolo_node')
-    rospy.Subscriber("/video_streaming_topic", CompressedImage, detect)
+    rospy.Subscriber("/zed2/zed_node/right/image_rect_color", Image, detect)
     rate = rospy.Rate(30)  # 10 Hz
     while not rospy.is_shutdown():
         rate.sleep()
@@ -72,19 +75,3 @@ if __name__ == '__main__':
         object_detection()
     except rospy.ROSInterruptException:
         pass
-
-
-"""
-def increase_brightness(image, value=20):
-    # Convert the image to float32 to prevent overflow
-    image = np.clip(image.astype(np.float32) + value, 0, 255).astype(np.uint8)
-    return image
-
-def increase_brightness(image, value=30):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)  # Convert to HSV
-    h, s, v = cv2.split(hsv)
-    v = cv2.add(v, value)  # Increase brightness
-    final_hsv = cv2.merge((h, s, v))
-    image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
-    return image
-"""

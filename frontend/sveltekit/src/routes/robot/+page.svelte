@@ -27,7 +27,7 @@
 	let speedGain = 0.0;
 
 	let showAI = false;
-	let showMap = true;
+	let showObjectDetection = false;
 	let showSensors = true;
 	let showControls = true;
 	let showCapture = false;
@@ -128,13 +128,41 @@
 
 		videoTopicListener = new ROSLIB.Topic({
 			ros: ros,
-			name: '/ai_topic',
+			name: '/video_streaming_topic',
 			messageType: 'sensor_msgs/CompressedImage'
 		});
 
 		videoTopicListener.subscribe(
 			(message) => {
-				// console.log(message.data);
+				const img = new Image();
+				img.onload = function () {
+					// ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				};
+				img.src = 'data:image/jpeg;base64,' + message.data;
+				// imageElement.src = 'data:image/jpeg;base64,' + message.data;
+			},
+			(error) => {
+				console.error(`Error in /terminal_topic subscription: ${error}`);
+				console.log(error);
+			}
+		);
+	}
+
+	function subscribeToAIStreamingTopic() {
+		let canvas = document.getElementById('video-stream');
+		let ctx = canvas.getContext('2d');
+
+		// let imageElement = document.getElementById('video-stream');
+
+		videoTopicListener = new ROSLIB.Topic({
+			ros: ros,
+			name: '/ai_streaming_topic',
+			messageType: 'sensor_msgs/CompressedImage'
+		});
+
+		videoTopicListener.subscribe(
+			(message) => {
 				const img = new Image();
 				img.onload = function () {
 					// ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -344,8 +372,8 @@
 	</div>
 
 	<div class="robot-container-body">
-		<canvas id="video-stream" style="display: {showVideo ? 'initial' : 'none'}"></canvas>
-		<!-- <img id="video-stream" alt="" style="display: {showVideo ? 'initial' : 'none'}" /> -->
+		<canvas id="video-stream" style="display: {showVideo || showControls ? 'initial' : 'none'}"
+		></canvas>
 
 		<div class="data-saver" style="display: {showCaptureButtons ? 'grid' : 'none'}">
 			<button style="visibility: hidden;"></button>
@@ -390,7 +418,12 @@
 			<button style="visibility: hidden;"></button>
 			<button style="visibility: hidden;"></button>
 
-			<button>AI1</button>
+			<button
+				on:click={() => {
+					showObjectDetection = !showObjectDetection;
+					if (showObjectDetection) subscribeToAIStreamingTopic();
+				}}>AI1</button
+			>
 			<button>AI2</button>
 			<button>AI3</button>
 		</div>
