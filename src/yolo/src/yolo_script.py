@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import sys
 import time
@@ -6,19 +7,21 @@ import cv2
 import rospy
 from sensor_msgs.msg import CompressedImage, Image
 import numpy as np
-# import ultralytics
 from ultralytics import YOLO
-# from IPython.display import display, Image
 from cv_bridge import CvBridge, CvBridgeError
+import torch
 
-# model = YOLO("/home/moborobot/RoboVoyager/src/yolo/best.pt")
-model = YOLO("yolov8n.pt")
+# Check if CUDA is available and set the device accordingly
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"Using device: {device}")
+
+model = YOLO("/home/moborobot/RoboVoyager/src/yolo/best.pt").to(device)
+#model = YOLO("yolov8n.pt")
 bridge = CvBridge()
 
 def predict(img):
     #img = increase_brightness(img)
-    img_resized = cv2.resize(img, (640, 320))
-    results = model.predict(img, save=False, imgsz=320, conf=0.3)
+    results = model.predict(img, save=False, imgsz=320, conf=0.4)
     for result in results:
         boxes = result.boxes.xyxy  # xyxy format: x1, y1, x2, y2
         class_ids = result.boxes.cls  # Get the class IDs
@@ -31,19 +34,20 @@ def predict(img):
             label = labels[int(class_id)]  # Get the class label
             cv2.putText(img, label, (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_TRIPLEX, 0.3, (0, 0, 255), 1,cv2.LINE_AA)
             # print(f"Box: {box} - Label: {label}")
+        height, width = img.shape[:2]
+        print(f"Image: Width: {width}, Height: {height}")
     return img
 
 def detect(ros_image):
     current_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding='bgr8')
+    # img_resized = cv2.resize(current_image, (200, 320))
     predicted_image = predict(current_image)
 
-    # height, width = current_image.shape[:2]
-    # print(f"Image: Width: {width}, Height: {height}")
 
-    # cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-    # cv2.resizeWindow("Resized_Window", 960, 540) 
-    # cv2.imshow("Resized_Window", predicted_image)
-    # cv2.waitKey(1)
+    cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("Resized_Window", 960, 540) 
+    cv2.imshow("Resized_Window", predicted_image)
+    cv2.waitKey(1)
 
     _, buffer = cv2.imencode('.jpg', predicted_image)
     pub = rospy.Publisher('/ai_streaming_topic', CompressedImage, queue_size=10)
