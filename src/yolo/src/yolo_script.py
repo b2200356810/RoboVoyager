@@ -44,13 +44,13 @@ def detect(ros_image):
     predicted_image = predict(current_image)
 
 
-    cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-    cv2.resizeWindow("Resized_Window", 960, 540) 
-    cv2.imshow("Resized_Window", predicted_image)
-    cv2.waitKey(1)
+    # cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
+    # cv2.resizeWindow("Resized_Window", 960, 540) 
+    # cv2.imshow("Resized_Window", predicted_image)
+    # cv2.waitKey(1)
 
     _, buffer = cv2.imencode('.jpg', predicted_image)
-    pub = rospy.Publisher('/ai_streaming_topic', CompressedImage, queue_size=10)
+    pub = rospy.Publisher('/object_detection_streaming_topic', CompressedImage, queue_size=10)
     msg = CompressedImage()
     msg.header.stamp = rospy.Time.now()
     msg.format = "jpeg"

@@ -5,8 +5,14 @@
 
 	let ros;
 
-	let terminalTopicListener;
-	let terminalTopicData;
+	let showAI = false;
+	let showSensors = true;
+	let showControls = true;
+	let showCapture = false;
+	let showVideo = false;
+
+	let objectDetectionListener;
+	let segmentationListener;
 	let videoTopicListener;
 	let sensorsTopicListener;
 	let sensorsTopicData = {
@@ -26,19 +32,11 @@
 	let joystickZ = 0;
 	let speedGain = 0.0;
 
-	let showAI = false;
-	let showObjectDetection = false;
-	let showSensors = true;
-	let showControls = true;
-	let showCapture = false;
-	let showVideo = false;
-
-	let showCaptureButtons = false;
+	let objectDetectionStarted = false;
+	let segmentationStarted = false;
 	let captureStarted = false;
 	let capturePaused = false;
 	let captureStopped = false;
-
-	let makeService = false;
 
 	onMount(async () => {
 		loadNippleJs();
@@ -46,7 +44,6 @@
 		const unsubscribe = rosStore.subscribe((value) => {
 			if (value !== null) {
 				ros = value;
-				subscribeToTerminalTopic();
 				subscribeToSensorsTopic();
 				publishToControlsTopic();
 			}
@@ -54,38 +51,12 @@
 	});
 
 	onDestroy(() => {
-		if (joystick) joystick.destroy();
-		if (terminalTopicListener) terminalTopicListener.unsubscribe();
+		if (objectDetectionListener) objectDetectionListener.unsubscribe();
+		if (segmentationListener) segmentationListener.unsubscribe();
 		if (sensorsTopicListener) sensorsTopicListener.unsubscribe();
+		if (joystick) joystick.destroy();
 		if (videoTopicListener) videoTopicListener.unsubscribe();
 	});
-
-	function getTimestamp() {
-		const now = new Date();
-		const hour = String(now.getHours()).padStart(2, '0');
-		const minute = String(now.getMinutes()).padStart(2, '0');
-		const timestamp = `[${hour}:${minute}]`;
-		return timestamp;
-	}
-
-	function subscribeToTerminalTopic() {
-		terminalTopicListener = new ROSLIB.Topic({
-			ros,
-			name: '/terminal_topic',
-			messageType: 'std_msgs/String'
-		});
-
-		terminalTopicListener.subscribe(
-			(message) => {
-				terminalTopicData = `${getTimestamp()} - ${message.data}`;
-				console.log(terminalTopicData);
-			},
-			(error) => {
-				console.error(`Error in /terminal_topic subscription: ${error}`);
-				console.log(error);
-			}
-		);
-	}
 
 	function subscribeToSensorsTopic() {
 		sensorsTopicListener = new ROSLIB.Topic({
@@ -124,76 +95,62 @@
 		let canvas = document.getElementById('video-stream');
 		let ctx = canvas.getContext('2d');
 
-		// let imageElement = document.getElementById('video-stream');
+		if (showVideo) {
+			videoTopicListener = new ROSLIB.Topic({
+				ros: ros,
+				name: '/video_streaming_topic',
+				messageType: 'sensor_msgs/CompressedImage'
+			});
 
-		videoTopicListener = new ROSLIB.Topic({
-			ros: ros,
-			name: '/video_streaming_topic',
-			messageType: 'sensor_msgs/CompressedImage'
-		});
-
-		videoTopicListener.subscribe(
-			(message) => {
+			videoTopicListener.subscribe((message) => {
 				const img = new Image();
 				img.onload = function () {
-					// ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 				};
 				img.src = 'data:image/jpeg;base64,' + message.data;
-				// imageElement.src = 'data:image/jpeg;base64,' + message.data;
-			},
-			(error) => {
-				console.error(`Error in /terminal_topic subscription: ${error}`);
-				console.log(error);
-			}
-		);
-	}
+			});
+		} else if (videoTopicListener) {
+			videoTopicListener.unsubscribe();
+		}
 
-	function subscribeToAIStreamingTopic() {
-		let canvas = document.getElementById('video-stream');
-		let ctx = canvas.getContext('2d');
+		if (objectDetectionStarted) {
+			objectDetectionListener = new ROSLIB.Topic({
+				ros: ros,
+				name: '/object_detection_streaming_topic',
+				messageType: 'sensor_msgs/CompressedImage'
+			});
 
-		// let imageElement = document.getElementById('video-stream');
-
-		videoTopicListener = new ROSLIB.Topic({
-			ros: ros,
-			name: '/ai_streaming_topic',
-			messageType: 'sensor_msgs/CompressedImage'
-		});
-
-		videoTopicListener.subscribe(
-			(message) => {
+			objectDetectionListener.subscribe((message) => {
 				const img = new Image();
 				img.onload = function () {
-					// ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 				};
 				img.src = 'data:image/jpeg;base64,' + message.data;
-				// imageElement.src = 'data:image/jpeg;base64,' + message.data;
-			},
-			(error) => {
-				console.error(`Error in /terminal_topic subscription: ${error}`);
-				console.log(error);
-			}
-		);
-	}
+			});
+		} else if (objectDetectionListener) {
+			objectDetectionListener.unsubscribe();
+		}
 
-	function changeVideoStreamSettings(width, height, fps) {
-		const service = new ROSLIB.Service({
-			ros: ros,
-			name: '/video_streaming_change_settings',
-			serviceType: 'video_streaming/SetVideoStreamSettings'
-		});
+		if (segmentationStarted) {
+			segmentationListener = new ROSLIB.Topic({
+				ros: ros,
+				name: '/segmentation_streaming_topic',
+				messageType: 'sensor_msgs/CompressedImage'
+			});
 
-		const request = new ROSLIB.ServiceRequest({
-			width: width,
-			height: height,
-			fps: fps
-		});
-
-		service.callService(request, (result) => {
-			console.log(`Service call result: ${result.success}, message: ${result.message}`);
-		});
+			segmentationListener.subscribe((message) => {
+				const img = new Image();
+				img.onload = function () {
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				};
+				img.src = 'data:image/jpeg;base64,' + message.data;
+			});
+		} else if (segmentationListener) {
+			segmentationListener.unsubscribe();
+		}
 	}
 
 	function publishToControlsTopic() {
@@ -356,7 +313,6 @@
 				style="color: {showCapture ? 'green' : 'red'}"
 				on:click={() => {
 					showCapture = !showCapture;
-					showCaptureButtons = !showCaptureButtons;
 				}}>Capture</button
 			>
 
@@ -364,69 +320,76 @@
 				style="color: {showVideo ? 'green' : 'red'}"
 				on:click={() => {
 					showVideo = !showVideo;
-					if (showVideo) subscribeToVideoStreamingTopic();
-					else videoTopicListener.unsubscribe();
+					subscribeToVideoStreamingTopic();
 				}}>Video</button
 			>
+
+			{#if showAI}
+				<button
+					style="color: {objectDetectionStarted ? 'green' : 'red'}"
+					on:click={() => {
+						objectDetectionStarted = !objectDetectionStarted;
+						subscribeToVideoStreamingTopic();
+					}}>Obj Det</button
+				>
+				<button
+					style="color: {segmentationStarted ? 'green' : 'red'}"
+					on:click={() => {
+						segmentationStarted = !segmentationStarted;
+						subscribeToVideoStreamingTopic();
+					}}>Seg</button
+				>
+			{/if}
+
+			{#if showCapture}
+				{#if !showAI}
+					<button style="visibility: hidden;"></button>
+					<button style="visibility: hidden;"></button>
+				{/if}
+				<button
+					style="color: {captureStarted ? 'green' : 'red'}"
+					on:click={() => {
+						if (capturePaused === true || captureStopped === true) {
+							capturePaused = false;
+							captureStopped = false;
+						}
+						captureStarted = true;
+						publishDataSaverStatus('start');
+					}}>Start</button
+				>
+				<button
+					style="color: {capturePaused ? 'green' : 'red'}"
+					on:click={() => {
+						if (captureStarted === true || captureStopped === true) {
+							captureStarted = false;
+							captureStopped = false;
+						}
+						capturePaused = true;
+						publishDataSaverStatus('pause');
+					}}>Pause</button
+				>
+				<button
+					style="color: {captureStopped ? 'green' : 'red'}"
+					on:click={() => {
+						if (captureStarted === true || capturePaused === true) {
+							captureStarted = false;
+							capturePaused = false;
+						}
+						captureStopped = true;
+						publishDataSaverStatus('stop');
+					}}>Stop</button
+				>
+			{/if}
 		</nav>
 	</div>
 
 	<div class="robot-container-body">
-		<canvas id="video-stream" style="display: {showVideo || showControls ? 'initial' : 'none'}"
+		<canvas
+			id="video-stream"
+			style="display: {showVideo || objectDetectionStarted || segmentationStarted
+				? 'initial'
+				: 'none'}"
 		></canvas>
-
-		<div class="data-saver" style="display: {showCaptureButtons ? 'grid' : 'none'}">
-			<button style="visibility: hidden;"></button>
-			<button style="visibility: hidden;"></button>
-
-			<button
-				style="color: {captureStarted ? 'green' : 'red'}"
-				on:click={() => {
-					if (capturePaused === true || captureStopped === true) {
-						capturePaused = false;
-						captureStopped = false;
-					}
-					captureStarted = true;
-					publishDataSaverStatus('start');
-				}}>Start</button
-			>
-			<button
-				style="color: {capturePaused ? 'green' : 'red'}"
-				on:click={() => {
-					if (captureStarted === true || captureStopped === true) {
-						captureStarted = false;
-						captureStopped = false;
-					}
-					capturePaused = true;
-					publishDataSaverStatus('pause');
-				}}>Pause</button
-			>
-			<button
-				style="color: {captureStopped ? 'green' : 'red'}"
-				on:click={() => {
-					if (captureStarted === true || capturePaused === true) {
-						captureStarted = false;
-						capturePaused = false;
-					}
-					captureStopped = true;
-					publishDataSaverStatus('stop');
-				}}>Stop</button
-			>
-		</div>
-
-		<div class="data-saver" style="display: {showAI ? 'grid' : 'none'}">
-			<button style="visibility: hidden;"></button>
-			<button style="visibility: hidden;"></button>
-
-			<button
-				on:click={() => {
-					showObjectDetection = !showObjectDetection;
-					if (showObjectDetection) subscribeToAIStreamingTopic();
-				}}>AI1</button
-			>
-			<button>AI2</button>
-			<button>AI3</button>
-		</div>
 
 		<div class="sensors-grid" style="visibility: {showSensors ? 'visible' : 'hidden'}">
 			<div class="sensor-icon">
@@ -637,6 +600,7 @@
 	}
 
 	.data-saver {
+		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		gap: 10px;
 		width: 100%;
